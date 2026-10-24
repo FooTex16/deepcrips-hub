@@ -1,0 +1,237 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===================================================================
+   DeepCrips Hub — Design Tokens
+   Theme gelap adalah default; tema terang diaktifkan via kelas `.light`
+   di element <html>. (Strategi ini dipilih agar tidak ada flash tema
+   gelap saat pengguna memilih tema terang.)
+   =================================================================== */
+
+:root,
+.dark {
+  color-scheme: dark;
+
+  --bg: 222 47% 5%;
+  --bg-subtle: 222 40% 8%;
+  --surface: 222 39% 10%;
+  --surface-2: 222 36% 13%;
+  --border: 222 30% 17%;
+  --border-strong: 221 32% 24%;
+  --text: 214 32% 94%;
+  --text-muted: 217 22% 66%;
+  --text-faint: 218 18% 48%;
+
+  --brand: 217 91% 60%;
+  --brand-hover: 216 94% 68%;
+  --brand-fg: 0 0% 100%;
+  --brand-soft: 217 60% 16%;
+
+  --cyan: 188 94% 52%;
+  --success: 152 62% 46%;
+  --warning: 38 92% 55%;
+  --danger: 0 76% 62%;
+  --ring: 217 91% 60%;
+}
+
+.light {
+  color-scheme: light;
+
+  --bg: 214 40% 98%;
+  --bg-subtle: 214 44% 96%;
+  --surface: 0 0% 100%;
+  --surface-2: 214 40% 96%;
+  --border: 214 32% 90%;
+  --border-strong: 214 28% 82%;
+  --text: 222 47% 11%;
+  --text-muted: 219 28% 40%;
+  --text-faint: 219 20% 58%;
+
+  --brand: 217 91% 52%;
+  --brand-hover: 218 92% 45%;
+  --brand-fg: 0 0% 100%;
+  --brand-soft: 214 92% 94%;
+
+  --cyan: 188 86% 38%;
+  --success: 152 58% 36%;
+  --warning: 32 88% 40%;
+  --danger: 0 72% 50%;
+  --ring: 217 91% 52%;
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: hsl(var(--bg));
+    color: hsl(var(--text));
+    font-feature-settings: "cv11", "ss01";
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100dvh;
+  }
+
+  ::selection {
+    background-color: hsl(var(--brand) / 0.32);
+    color: hsl(var(--text));
+  }
+
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Scrollbar tipis yang menyatu dengan tema */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border-strong)) transparent;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--border-strong));
+    border-radius: 9999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@layer components {
+  /* Kartu konten */
+  .card {
+    @apply rounded-2xl border border-border bg-surface shadow-card;
+  }
+
+  /* Tautan inline dengan aksen brand */
+  .link-brand {
+    @apply text-brand underline-offset-4 transition-colors hover:underline;
+  }
+
+  /* Kontainer teks panjang agar tetap nyaman dibaca */
+  .prose-dc {
+    @apply max-w-[68ch] text-[15px] leading-relaxed text-text-muted;
+  }
+
+  .prose-dc h2 {
+    @apply mb-3 mt-8 text-xl font-semibold text-text;
+  }
+
+  .prose-dc h3 {
+    @apply mb-2 mt-6 text-base font-semibold text-text;
+  }
+
+  .prose-dc p {
+    @apply my-3;
+  }
+
+  .prose-dc a {
+    @apply link-brand font-medium;
+  }
+
+  .prose-dc ul {
+    @apply my-3 list-disc space-y-1.5 pl-6;
+  }
+
+  .prose-dc ol {
+    @apply my-3 list-decimal space-y-1.5 pl-6;
+  }
+
+  .prose-dc code {
+    @apply rounded border border-border bg-bg-subtle px-1.5 py-0.5 font-mono text-[0.85em] text-text;
+  }
+
+  .prose-dc pre {
+    @apply my-4 overflow-x-auto rounded-xl border border-border bg-bg-subtle p-4;
+  }
+
+  .prose-dc pre code {
+    @apply border-0 bg-transparent p-0;
+  }
+
+  .prose-dc blockquote {
+    @apply my-4 border-l-2 border-brand/60 pl-4 italic text-text-muted;
+  }
+
+  /* Badge status — label teks + warna, tidak hanya warna */
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs font-medium;
+  }
+}
+
+@layer utilities {
+  /* Gradient aksen tipis untuk elemen hero/brand */
+  .text-gradient-brand {
+    background: linear-gradient(120deg, hsl(var(--brand)) 0%, hsl(var(--cyan)) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Grid latar berpattern halus untuk hero */
+  .bg-grid-fade {
+    background-image: linear-gradient(hsl(var(--border) / 0.6) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--border) / 0.6) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 40%, transparent 100%);
+    -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 40%, transparent 100%);
+  }
+
+  .skeleton {
+    @apply animate-shimmer rounded-md bg-[linear-gradient(90deg,hsl(var(--surface-2))_25%,hsl(var(--border))_50%,hsl(var(--surface-2))_75%)];
+    background-size: 200% 100%;
+  }
+}
+
+/* ===================================================================
+   Motion — hormati preferensi reduced-motion
+   =================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Reveal-on-scroll (diaktifkan JS via IntersectionObserver) */
+.reveal {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
