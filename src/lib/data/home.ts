@@ -150,7 +150,7 @@ export async function getRecentForumTopics(limit = 5): Promise<ForumTopic[]> {
     const supabase = createPublicClient();
     const { data } = await supabase
       .from("forum_topics")
-      .select("*, author:profiles(id, display_name, avatar_url)")
+      .select("*, author:profiles!author_id(id, display_name, avatar_url)")
       .eq("hidden", false)
       .order("last_activity_at", { ascending: false })
       .limit(limit);

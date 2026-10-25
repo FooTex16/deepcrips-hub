@@ -18,7 +18,7 @@ export async function GET(request: Request) {
     const supabase = await createClient();
     let query = supabase
       .from("forum_topics")
-      .select("id, title, body, hidden, locked, comment_count, hotness_score, created_at, author:profiles(id, display_name)")
+      .select("id, title, body, hidden, locked, comment_count, hotness_score, created_at, author:profiles!author_id(id, display_name)")
       .order("created_at", { ascending: false })
       .limit(limit);
     if (q) query = query.ilike("title", `%${q}%`);

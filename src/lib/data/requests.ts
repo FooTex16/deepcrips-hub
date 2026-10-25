@@ -17,19 +17,25 @@ export interface RequestListParams {
   page?: number;
 }
 
+// Hint !kolom: content_requests punya banyak jalur ke profiles (via
+// request_votes) dan ke games (via files) → tanpa hint PostgREST PGRST201.
+// Satu literal string (bukan concatenation `+`) agar parser tipe supabase-js
+// tetap mengenali select ini.
 const REQUEST_SELECT =
-  "*, requester:profiles(id, display_name, avatar_url), game:games(id, slug, title)";
+  "*, requester:profiles!requester_id(id, display_name, avatar_url), game:games!game_id(id, slug, title)";
 
-/** Daftar permintaan publik (status ≠ pending tampil publik; milik sendiri selalu terlihat). */
+/**
+ * Daftar permintaan publik. Visibilitas tidak difilter di query — diserahkan
+ * ke policy RLS `requests_read`: status ≠ pending tampil publik, status
+ * pending hanya terlihat oleh pemiliknya dan staf (bukan disembunyikan
+ * untuk semua orang seperti filter `neq pending` yang lama).
+ */
 export async function listRequests(params: RequestListParams): Promise<Paged<ContentRequest>> {
   const page = Math.max(1, params.page ?? 1);
   const sort = params.sort === "latest" ? "latest" : "votes";
   try {
     const supabase = await createClient();
-    let query = supabase
-      .from("content_requests")
-      .select(REQUEST_SELECT, { count: "exact" })
-      .neq("status", "pending");
+    let query = supabase.from("content_requests").select(REQUEST_SELECT, { count: "exact" });
 
     if (params.q) {
       query = query.or(
@@ -64,7 +70,7 @@ export async function getRequest(id: string): Promise<ContentRequest | null> {
     const supabase = await createClient();
     const { data } = await supabase
       .from("content_requests")
-      .select(`${REQUEST_SELECT}, result_file:files(id, slug, title)`)
+      .select(`${REQUEST_SELECT}, result_file:files!result_file_id(id, slug, title)`)
       .eq("id", id)
       .maybeSingle();
     return (data as unknown as ContentRequest | null) ?? null;

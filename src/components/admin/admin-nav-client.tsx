@@ -3,13 +3,45 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu } from "lucide-react";
+import {
+  Menu,
+  LayoutDashboard,
+  Gamepad2,
+  FileDown,
+  BookOpen,
+  Video,
+  Star,
+  MessagesSquare,
+  Flag,
+  Vote,
+  Users,
+  Settings,
+  ScrollText,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface NavItem {
+// Ikon DIIMPOR DI SINI (komponen client) dan dirujuk lewat string — jangan
+// meneruskan fungsi komponen dari Server Component (React: "Functions cannot
+// be passed directly to Client Components" → error 500).
+const ICONS = {
+  dashboard: LayoutDashboard,
+  game: Gamepad2,
+  file: FileDown,
+  tutorial: BookOpen,
+  video: Video,
+  featured: Star,
+  forum: MessagesSquare,
+  reports: Flag,
+  requests: Vote,
+  members: Users,
+  settings: Settings,
+  audit: ScrollText,
+} as const;
+
+export interface NavItem {
   href: string;
   label: string;
-  icon: React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
+  icon: keyof typeof ICONS;
   exact?: boolean;
 }
 
@@ -57,7 +89,7 @@ export function AdminNavClient({
       >
         <ul className="flex gap-1.5 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible lg:pb-0">
           {visible.map((item) => {
-            const Icon = item.icon;
+            const Icon = ICONS[item.icon];
             const active = isActive(item);
             return (
               <li key={item.href} className="shrink-0 lg:shrink">

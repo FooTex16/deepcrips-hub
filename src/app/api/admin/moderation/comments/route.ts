@@ -18,7 +18,7 @@ export async function GET(request: Request) {
     const { data, error } = await supabase
       .from("forum_comments")
       .select(
-        "id, body, hidden, created_at, author:profiles(id, display_name), topic:forum_topics(id, title)"
+        "id, body, hidden, created_at, author:profiles!author_id(id, display_name), topic:forum_topics!topic_id(id, title)"
       )
       .eq("hidden", true)
       .order("created_at", { ascending: false })

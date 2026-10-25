@@ -5,9 +5,11 @@ export const GET = makeAdminList({
   table: "content_reports",
   role: "staff",
   select:
-    "*, reporter:profiles(id, display_name, avatar_url), " +
-    "topic:forum_topics(id, title, hidden, locked), " +
-    "comment:forum_comments(id, body, hidden)",
+    // !reporter_id: content_reports punya dua FK ke profiles (reporter_id,
+    // handled_by) → embed tanpa hint memicu PGRST201.
+    "*, reporter:profiles!reporter_id(id, display_name, avatar_url), " +
+    "topic:forum_topics!topic_id(id, title, hidden, locked), " +
+    "comment:forum_comments!comment_id(id, body, hidden)",
   filterColumns: ["status"],
   orderBy: { column: "created_at", ascending: false },
   limit: 25,

@@ -1,42 +1,31 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
-import {
-  LayoutDashboard,
-  Gamepad2,
-  FileDown,
-  BookOpen,
-  Video,
-  Star,
-  MessagesSquare,
-  Flag,
-  Vote,
-  Users,
-  Settings,
-  ScrollText,
-} from "lucide-react";
 import { getAuthUser, getStaffContext } from "@/lib/auth";
 import { BrandLogo } from "@/components/brand/logo";
-import { AdminNavClient } from "@/components/admin/admin-nav-client";
+import { AdminNavClient, type NavItem } from "@/components/admin/admin-nav-client";
 
 export const metadata: Metadata = {
   title: { default: "Admin", template: "%s · Admin · DeepCrips Hub" },
   robots: { index: false, follow: false },
 };
 
-const NAV = [
-  { href: "/admin", label: "Ringkasan", icon: LayoutDashboard, exact: true },
-  { href: "/admin/games", label: "Game", icon: Gamepad2 },
-  { href: "/admin/files", label: "File & Versi", icon: FileDown },
-  { href: "/admin/tutorials", label: "Tutorial", icon: BookOpen },
-  { href: "/admin/videos", label: "Video", icon: Video },
-  { href: "/admin/featured", label: "Unggulan", icon: Star },
-  { href: "/admin/forum", label: "Moderasi Forum", icon: MessagesSquare },
-  { href: "/admin/reports", label: "Laporan", icon: Flag },
-  { href: "/admin/requests", label: "Permintaan", icon: Vote },
-  { href: "/admin/members", label: "Anggota & Peran", icon: Users },
-  { href: "/admin/settings", label: "Pengaturan", icon: Settings },
-  { href: "/admin/audit", label: "Log Audit", icon: ScrollText },
+// Ikon dirujuk lewat string dan diresolusi di dalam AdminNavClient (client
+// component) — meneruskan fungsi komponen sebagai prop ke client component
+// dibatalkan React dengan error 500.
+const NAV: NavItem[] = [
+  { href: "/admin", label: "Ringkasan", icon: "dashboard", exact: true },
+  { href: "/admin/games", label: "Game", icon: "game" },
+  { href: "/admin/files", label: "File & Versi", icon: "file" },
+  { href: "/admin/tutorials", label: "Tutorial", icon: "tutorial" },
+  { href: "/admin/videos", label: "Video", icon: "video" },
+  { href: "/admin/featured", label: "Unggulan", icon: "featured" },
+  { href: "/admin/forum", label: "Moderasi Forum", icon: "forum" },
+  { href: "/admin/reports", label: "Laporan", icon: "reports" },
+  { href: "/admin/requests", label: "Permintaan", icon: "requests" },
+  { href: "/admin/members", label: "Anggota & Peran", icon: "members" },
+  { href: "/admin/settings", label: "Pengaturan", icon: "settings" },
+  { href: "/admin/audit", label: "Log Audit", icon: "audit" },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

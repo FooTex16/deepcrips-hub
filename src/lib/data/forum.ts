@@ -16,7 +16,12 @@ export interface Paged<T> {
   totalPages: number;
 }
 
-const TOPIC_SELECT = "*, author:profiles(id, display_name, avatar_url), game:games(id, slug, title)";
+// !author_id: forum_topics ↔ profiles punya jalur m2m via forum_reactions →
+// tanpa hint embed author memicu PGRST201 dan daftar topik jadi kosong.
+// Satu literal string (bukan concatenation `+`) agar parser tipe supabase-js
+// tetap mengenali select ini.
+const TOPIC_SELECT =
+  "*, author:profiles!author_id(id, display_name, avatar_url), game:games!game_id(id, slug, title)";
 
 /** Daftar topik forum: cari (judul+isi), sortir, paginasi — semua server-side. */
 export async function listTopics(params: ForumListParams): Promise<Paged<ForumTopic>> {
@@ -85,7 +90,7 @@ export async function listComments(topicId: string): Promise<CommentWithReaction
     const supabase = await createClient();
     const { data } = await supabase
       .from("forum_comments")
-      .select("*, author:profiles(id, display_name, avatar_url)")
+      .select("*, author:profiles!author_id(id, display_name, avatar_url)")
       .eq("topic_id", topicId)
       .eq("hidden", false)
       .order("created_at", { ascending: true });
