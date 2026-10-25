@@ -39,6 +39,22 @@ create index if not exists games_status_published_idx on public.games (status, p
 -- ---------------------------------------------------------------------------
 -- files (metadata unduhan; file besar tetap di host eksternal)
 -- ---------------------------------------------------------------------------
+
+-- Helper untuk CHECK constraint: PostgreSQL melarang subquery langsung di
+-- CHECK (error 0A000), jadi validasi "semua elemen text[] harus http(s)"
+-- dibungkus fungsi SQL immutable (dipanggil dari constraint files di bawah).
+create or replace function public.all_http_urls(urls text[])
+returns boolean
+language sql
+immutable
+parallel safe
+as $$
+  select coalesce(array_length(urls, 1), 0) = 0
+      or not exists (
+           select 1 from unnest(urls) as u where u !~* '^https?://'
+         )
+$$;
+
 create table if not exists public.files (
   id             uuid primary key default gen_random_uuid(),
   slug           text not null unique,
@@ -67,10 +83,7 @@ create table if not exists public.files (
   constraint files_source_len check (source_info is null or char_length(source_info) <= 1000),
   constraint files_security_notes_len check (security_notes is null or char_length(security_notes) <= 4000),
   constraint files_check_notes_len check (check_notes is null or char_length(check_notes) <= 2000),
-  constraint files_screenshots_http check (
-    coalesce(array_length(screenshots, 1), 0) = 0
-    or not exists (select 1 from unnest(screenshots) s where s !~* '^https?://')
-  )
+  constraint files_screenshots_http check (public.all_http_urls(screenshots))
 );
 
 drop trigger if exists files_set_updated_at on public.files;
