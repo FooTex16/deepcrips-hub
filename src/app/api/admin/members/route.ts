@@ -17,9 +17,11 @@ export async function GET(request: Request) {
 
   try {
     const supabase = await createClient();
+    // !user_id: member_roles punya DUA FK ke profiles (user_id, granted_by)
+    // → tanpa hint PostgREST membalas PGRST201 ("more than one relationship").
     let query = supabase
       .from("profiles")
-      .select("id, display_name, avatar_url, created_at, roles:member_roles(role)", { count: "exact" });
+      .select("id, display_name, avatar_url, created_at, roles:member_roles!user_id(role)", { count: "exact" });
     if (q) query = query.ilike("display_name", `%${q}%`);
 
     const from = (page - 1) * limit;
