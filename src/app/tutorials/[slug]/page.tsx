@@ -8,13 +8,32 @@ import { ConfigMissingState } from "@/components/ui/states";
 import { SmartImg } from "@/components/ui/smart-img";
 import { isSupabaseReady } from "@/lib/data/home";
 import { getTutorialBySlug } from "@/lib/data/catalog";
+import { createPublicClient } from "@/lib/supabase/server";
 import { renderMarkdown } from "@/lib/markdown";
 import { formatDate } from "@/lib/utils";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 interface Props {
   params: Promise<{ slug: string }>;
+}
+
+/**
+ * Mengaktifkan ISR untuk route dinamis ini (lihat docs Next: generateStaticParams
+ * menyalakan ISR). Path yang belum ada di build dirender on-demand lalu di-cache.
+ */
+export async function generateStaticParams(): Promise<Array<{ slug: string }>> {
+  try {
+    const supabase = createPublicClient();
+    const { data } = await supabase
+      .from("tutorials")
+      .select("slug")
+      .eq("status", "published")
+      .limit(500);
+    return (data ?? []).map((t: { slug: string }) => ({ slug: t.slug }));
+  } catch {
+    return [];
+  }
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

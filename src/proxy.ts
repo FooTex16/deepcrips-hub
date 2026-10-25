@@ -17,6 +17,17 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next({ request });
   }
 
+  // Hitung dulu kebutuhan proteksi & sesi.
+  const { pathname, search } = request.nextUrl;
+  const isProtected = PROTECTED_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+
+  // Jalan cepat: bukan route privat dan tidak ada sesi Supabase → tanpa kerja
+  // Supabase sama sekali (browse anonim jadi murah di setiap request).
+  const hasSession = request.cookies.getAll().some(({ name }) => name.startsWith("sb-"));
+  if (!isProtected && !hasSession) {
+    return NextResponse.next({ request });
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -41,9 +52,6 @@ export async function proxy(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  const { pathname, search } = request.nextUrl;
-  const isProtected = PROTECTED_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 
   if (!user && isProtected) {
     const redirectUrl = request.nextUrl.clone();

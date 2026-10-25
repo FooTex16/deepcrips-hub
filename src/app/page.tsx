@@ -23,7 +23,7 @@ import {
   getRecentForumTopics,
 } from "@/lib/data/home";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export default async function HomePage() {
   const ready = await isSupabaseReady();

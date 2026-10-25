@@ -1,7 +1,10 @@
 import type { MetadataRoute } from "next";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/server";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+
+// Sitemap di-static-kan + disegarkan tiap jam (bukan per-request).
+export const revalidate = 3600;
 
 /**
  * Sitemap dinamis — hanya menyertakan konten published. Bila Supabase belum
@@ -21,7 +24,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
 
     const [games, files, tutorials, videos] = await Promise.all([
       supabase.from("games").select("slug, updated_at").eq("status", "published").limit(5000),

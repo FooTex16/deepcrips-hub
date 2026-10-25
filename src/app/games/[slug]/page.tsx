@@ -44,7 +44,7 @@ export default async function GameDetailPage({ params, searchParams }: Props) {
   }
   if (!game || game.status !== "published") notFound();
 
-  const content = await getGameContent(slug);
+  const content = await getGameContent(game.id);
   const activeTab = ["download", "tutorial", "video"].includes(tab ?? "") ? (tab as string) : "semua";
 
   const tabs = [

@@ -159,7 +159,7 @@ create view public.download_hosts_public as
   join public.file_versions v on v.id = h.file_version_id
   join public.files f on f.id = v.file_id
   where f.status = 'published';
-grant select on public.download_hosts_public to anon;
+grant select on public.download_hosts_public to anon, authenticated;
 
 -- ---------------------------------------------------------------------------
 -- download_events — klik dicatat server-side; anggota hanya boleh menyisipkan

@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/server";
 import type { FileItem, Game, Tutorial, Video } from "@/lib/types";
 
 export const FILE_PAGE_SIZE = 12;
@@ -23,7 +23,7 @@ export interface Paged<T> {
 export async function listPublishedFiles(filters: FileFilters): Promise<Paged<FileItem>> {
   const page = Math.max(1, filters.page ?? 1);
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     let query = supabase
       .from("files")
       .select("*, game:games(id, slug, title, cover_url, genre)", { count: "exact" })
@@ -58,16 +58,30 @@ export async function listPublishedFiles(filters: FileFilters): Promise<Paged<Fi
 
     if (filters.availability === "available") {
       // Hanya file yang punya minimal satu versi available + host aktif.
+      // Catatan: `download_hosts` di-REVOKE dari anon, jadi dibaca lewat view
+      // `download_hosts_public` (tanpa embed — view tidak punya FK).
       try {
-        const supabase2 = await createClient();
+        const supabase2 = createPublicClient();
         const ids = items.map((f) => f.id);
         const { data: versions } = await supabase2
           .from("file_versions")
-          .select("file_id, id, download_hosts!inner(id)")
+          .select("id, file_id")
           .in("file_id", ids)
-          .eq("status", "available")
-          .eq("download_hosts.is_active", true);
-        const availableFileIds = new Set((versions ?? []).map((v: { file_id: string }) => v.file_id));
+          .eq("status", "available");
+        const versionRows = (versions ?? []) as Array<{ id: string; file_id: string }>;
+        const fileByVersion = new Map(versionRows.map((v) => [v.id, v.file_id]));
+        const availableFileIds = new Set<string>();
+        if (versionRows.length > 0) {
+          const { data: hosts } = await supabase2
+            .from("download_hosts_public")
+            .select("file_version_id")
+            .in("file_version_id", versionRows.map((v) => v.id))
+            .eq("is_active", true);
+          for (const h of hosts ?? []) {
+            const fileId = fileByVersion.get((h as { file_version_id: string }).file_version_id);
+            if (fileId) availableFileIds.add(fileId);
+          }
+        }
         items = items.filter((f) => availableFileIds.has(f.id));
       } catch {
         /* biarkan daftar apa adanya */
@@ -83,7 +97,7 @@ export async function listPublishedFiles(filters: FileFilters): Promise<Paged<Fi
 
 export async function getFileBySlug(slug: string): Promise<FileItem | null> {
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data } = await supabase
       .from("files")
       .select("*, game:games(id, slug, title, cover_url, genre)")
@@ -119,25 +133,45 @@ export interface FileVersionWithHosts {
 /**
  * Versi + metadata host (TANPA kolom url — URL hanya lewat /api/download
  * yang mewajibkan login & mencatat klik).
+ *
+ * Dua langkah karena `download_hosts` di-REVOKE dari role anon: host dibaca
+ * lewat view `download_hosts_public` (grant select ke anon, tanpa url).
  */
 export async function getFileVersions(fileId: string): Promise<FileVersionWithHosts[]> {
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data } = await supabase
       .from("file_versions")
       .select(
-        "id, file_id, version_label, release_notes, released_at, sha256, compatibility, status, is_latest, " +
-          "hosts:download_hosts(id, name, is_active, status, priority, status_note, last_checked_at)"
+        "id, file_id, version_label, release_notes, released_at, sha256, compatibility, status, is_latest"
       )
       .eq("file_id", fileId)
       .order("released_at", { ascending: false, nullsFirst: false });
-    const rows = (data ?? []) as unknown as FileVersionWithHosts[];
-    for (const row of rows) {
-      row.hosts = [...(row.hosts ?? [])].sort((a, b) => {
-        const aOk = a.is_active && a.status === "active" ? 0 : 1;
-        const bOk = b.is_active && b.status === "active" ? 0 : 1;
-        return aOk - bOk || a.priority - b.priority;
-      });
+    const rows = ((data ?? []) as unknown as FileVersionWithHosts[]).map((row) => ({
+      ...row,
+      hosts: [] as FileVersionWithHosts["hosts"],
+    }));
+
+    const versionIds = rows.map((r) => r.id);
+    if (versionIds.length > 0) {
+      const { data: hosts } = await supabase
+        .from("download_hosts_public")
+        .select("id, file_version_id, name, is_active, status, priority, status_note, last_checked_at")
+        .in("file_version_id", versionIds);
+      const byVersion = new Map<string, FileVersionWithHosts["hosts"]>();
+      for (const h of hosts ?? []) {
+        const vid = (h as { file_version_id: string }).file_version_id;
+        const list = byVersion.get(vid) ?? [];
+        list.push(h as FileVersionWithHosts["hosts"][number]);
+        byVersion.set(vid, list);
+      }
+      for (const row of rows) {
+        row.hosts = [...(byVersion.get(row.id) ?? [])].sort((a, b) => {
+          const aOk = a.is_active && a.status === "active" ? 0 : 1;
+          const bOk = b.is_active && b.status === "active" ? 0 : 1;
+          return aOk - bOk || a.priority - b.priority;
+        });
+      }
     }
     return rows;
   } catch {
@@ -155,7 +189,7 @@ export async function listPublishedGames(params: {
 }): Promise<Paged<Game>> {
   const page = Math.max(1, params.page ?? 1);
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     let query = supabase.from("games").select("*", { count: "exact" }).eq("status", "published");
     if (params.q) {
       query = query.textSearch("search_tsv", params.q, { config: "simple", type: "websearch" });
@@ -176,7 +210,7 @@ export async function listPublishedGames(params: {
 
 export async function getGameBySlug(slug: string): Promise<Game | null> {
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data } = await supabase.from("games").select("*").eq("slug", slug).maybeSingle();
     return (data as Game | null) ?? null;
   } catch {
@@ -186,7 +220,7 @@ export async function getGameBySlug(slug: string): Promise<Game | null> {
 
 export async function getGameGenres(): Promise<string[]> {
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data } = await supabase
       .from("games")
       .select("genre")
@@ -200,16 +234,13 @@ export async function getGameGenres(): Promise<string[]> {
 }
 
 /** Konten terkait satu game (dipakai tab di halaman detail game). */
-export async function getGameContent(slug: string): Promise<{
+export async function getGameContent(gameId: string): Promise<{
   files: FileItem[];
   tutorials: Tutorial[];
   videos: Video[];
 }> {
   try {
-    const supabase = await createClient();
-    const { data: game } = await supabase.from("games").select("id").eq("slug", slug).maybeSingle();
-    if (!game) return { files: [], tutorials: [], videos: [] };
-    const gameId = (game as { id: string }).id;
+    const supabase = createPublicClient();
     const [files, tutorials, videos] = await Promise.all([
       supabase
         .from("files")
@@ -249,7 +280,7 @@ export async function listPublishedTutorials(params: {
 }): Promise<Paged<Tutorial>> {
   const page = Math.max(1, params.page ?? 1);
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     let query = supabase
       .from("tutorials")
       .select("*, game:games(id, slug, title)", { count: "exact" })
@@ -274,7 +305,7 @@ export async function listPublishedTutorials(params: {
 
 export async function getTutorialBySlug(slug: string): Promise<Tutorial | null> {
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data } = await supabase
       .from("tutorials")
       .select("*, game:games(id, slug, title)")
@@ -295,7 +326,7 @@ export async function listPublishedVideos(params: {
 }): Promise<Paged<Video>> {
   const page = Math.max(1, params.page ?? 1);
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     let query = supabase.from("videos").select("*", { count: "exact" }).eq("status", "published");
     if (params.q) query = query.textSearch("search_tsv", params.q, { config: "simple", type: "websearch" });
     if (params.category) query = query.eq("category", params.category);
@@ -317,7 +348,7 @@ export async function listPublishedVideos(params: {
 
 export async function getVideoBySlug(slug: string): Promise<Video | null> {
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data } = await supabase.from("videos").select("*").eq("slug", slug).maybeSingle();
     return (data as Video | null) ?? null;
   } catch {

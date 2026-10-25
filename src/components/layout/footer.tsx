@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { MessageCircle, Send } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/server";
 import { CREATOR_HANDLE, SITE_NAME, SITE_TAGLINE } from "@/lib/utils";
 import { BrandMark } from "@/components/brand/logo";
 import { YoutubeIcon } from "@/components/brand/youtube-icon";
@@ -10,7 +10,9 @@ async function getCommunityLinks(): Promise<{ discord: string | null; telegram: 
     ? `https://www.youtube.com/@${process.env.NEXT_PUBLIC_YOUTUBE_HANDLE}`
     : null;
   try {
-    const supabase = await createClient();
+    // Klien publik tanpa cookies() — Footer ada di root layout, sehingga
+    // pemakaian cookies() akan memaksa SEMUA halaman jadi dynamic.
+    const supabase = createPublicClient();
     const { data } = await supabase
       .from("site_settings")
       .select("key, value")

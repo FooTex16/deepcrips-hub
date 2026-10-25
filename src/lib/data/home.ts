@@ -1,4 +1,5 @@
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/server";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
 import type { FileItem, ForumTopic, Game, Tutorial, Video } from "@/lib/types";
 
 /**
@@ -9,19 +10,16 @@ import type { FileItem, ForumTopic, Game, Tutorial, Video } from "@/lib/types";
  */
 
 export async function isSupabaseReady(): Promise<boolean> {
-  try {
-    await createClient();
-    return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
-  } catch {
-    return false;
-  }
+  // Cukup cek env — TIDAK menyentuh cookies() agar halaman publik tetap
+  // bisa di-cache static/ISR.
+  return isSupabaseConfigured();
 }
 
 const FILE_WITH_GAME = "*, game:games(id, slug, title, cover_url, genre)";
 
 export async function getFeaturedFiles(limit = 3): Promise<FileItem[]> {
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data: featured } = await supabase
       .from("featured_items")
       .select("file_id, position")
@@ -45,7 +43,7 @@ export async function getFeaturedFiles(limit = 3): Promise<FileItem[]> {
 
 export async function getLatestFiles(limit = 6): Promise<FileItem[]> {
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data } = await supabase
       .from("files")
       .select(FILE_WITH_GAME)
@@ -60,7 +58,7 @@ export async function getLatestFiles(limit = 6): Promise<FileItem[]> {
 
 export async function getPublishedGames(limit = 6): Promise<Game[]> {
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data } = await supabase
       .from("games")
       .select("*")
@@ -83,7 +81,7 @@ export interface VersionWithFile {
 
 export async function getRecentVersionUpdates(limit = 4): Promise<VersionWithFile[]> {
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data } = await supabase
       .from("file_versions")
       .select("id, version_label, released_at, status, file:files(id, slug, title, category, status)")
@@ -101,7 +99,7 @@ export async function getRecentVersionUpdates(limit = 4): Promise<VersionWithFil
 
 export async function getFeaturedTutorials(limit = 3): Promise<Tutorial[]> {
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data: featured } = await supabase
       .from("featured_items")
       .select("tutorial_id, position")
@@ -134,7 +132,7 @@ export async function getFeaturedTutorials(limit = 3): Promise<Tutorial[]> {
 
 export async function getLatestVideos(limit = 4): Promise<Video[]> {
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data } = await supabase
       .from("videos")
       .select("*")
@@ -149,7 +147,7 @@ export async function getLatestVideos(limit = 4): Promise<Video[]> {
 
 export async function getRecentForumTopics(limit = 5): Promise<ForumTopic[]> {
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data } = await supabase
       .from("forum_topics")
       .select("*, author:profiles(id, display_name, avatar_url)")
