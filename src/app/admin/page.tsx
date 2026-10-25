@@ -10,6 +10,7 @@ import {
   Vote,
   MousePointerClick,
   AlertTriangle,
+  ArrowRight,
 } from "lucide-react";
 import { Section } from "@/components/layout/section";
 import { ConfigMissingState } from "@/components/ui/states";
@@ -68,7 +69,10 @@ export default async function AdminOverviewPage() {
               className="group rounded-2xl border border-border bg-surface p-5 transition-all hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-card"
             >
               <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-brand-soft text-brand">
-                <Icon className="h-4 w-4" aria-hidden />
+                <Icon
+                  className="h-4 w-4 transition-transform duration-150 group-hover:-rotate-3 group-hover:scale-110"
+                  aria-hidden
+                />
               </span>
               <p className="mt-3 flex items-center gap-1.5 text-2xl font-bold text-text">
                 {stats.ready ? c.value.toLocaleString("id-ID") : "—"}
@@ -115,9 +119,14 @@ function QuickAction({ href, label }: { href: string; label: string }) {
   return (
     <Link
       href={href}
-      className="inline-flex h-11 items-center justify-center rounded-xl border border-border bg-surface px-4 text-sm font-medium text-text-muted transition-colors hover:border-brand/40 hover:text-brand"
+      prefetch={true}
+      className="group inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-border bg-surface px-4 text-sm font-medium text-text-muted transition-all duration-150 hover:border-brand/40 hover:text-brand active:scale-[0.98]"
     >
       {label}
+      <ArrowRight
+        className="h-4 w-4 transition-transform duration-150 group-hover:translate-x-0.5"
+        aria-hidden
+      />
     </Link>
   );
 }

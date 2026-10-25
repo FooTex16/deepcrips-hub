@@ -49,7 +49,7 @@ export function Header() {
               href={link.href}
               aria-current={isActive(pathname, link.href) ? "page" : undefined}
               className={cn(
-                "rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                "whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150 active:scale-[0.98]",
                 isActive(pathname, link.href)
                   ? "bg-surface-2 text-text"
                   : "text-text-muted hover:bg-surface-2/70 hover:text-text"

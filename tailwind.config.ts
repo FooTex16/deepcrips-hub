@@ -36,6 +36,7 @@ const config: Config = {
         success: "hsl(var(--success) / <alpha-value>)",
         warning: "hsl(var(--warning) / <alpha-value>)",
         danger: "hsl(var(--danger) / <alpha-value>)",
+        info: "hsl(var(--info) / <alpha-value>)",
         ring: "hsl(var(--ring) / <alpha-value>)",
       },
       fontFamily: {

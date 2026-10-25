@@ -95,16 +95,20 @@ export function AdminNavClient({
               <li key={item.href} className="shrink-0 lg:shrink">
                 <Link
                   href={item.href}
+                  prefetch={true}
                   onClick={() => setOpen(false)}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "inline-flex h-10 items-center gap-2.5 whitespace-nowrap rounded-xl px-3.5 text-sm font-medium transition-colors lg:w-full",
+                    "group inline-flex h-10 items-center gap-2.5 whitespace-nowrap rounded-xl px-3.5 text-sm font-medium transition-all duration-150 active:scale-[0.98] lg:w-full",
                     active
                       ? "bg-brand-soft text-brand"
                       : "text-text-muted hover:bg-surface-2 hover:text-text"
                   )}
                 >
-                  <Icon className="h-4 w-4" aria-hidden />
+                  <Icon
+                    className="h-4 w-4 transition-transform duration-150 group-hover:scale-110"
+                    aria-hidden
+                  />
                   {item.label}
                 </Link>
               </li>

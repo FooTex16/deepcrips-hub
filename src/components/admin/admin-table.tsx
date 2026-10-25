@@ -58,9 +58,9 @@ export function AdminTable<T extends { id: string }>({
   const showActions = Boolean(rowActions);
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-surface">
+    <div className="rounded-2xl border border-border bg-surface">
       {/* Header (desktop) */}
-      <div className="hidden border-b border-border bg-bg-subtle px-4 py-2.5 lg:flex lg:gap-4">
+      <div className="hidden rounded-t-2xl border-b border-border bg-bg-subtle px-4 py-2.5 lg:flex lg:gap-4">
         {columns.map((c) => (
           <span
             key={c.key}
@@ -72,12 +72,15 @@ export function AdminTable<T extends { id: string }>({
             {c.header}
           </span>
         ))}
-        {showActions && <span className="w-32 shrink-0 text-right text-xs font-semibold uppercase tracking-wide text-text-faint">Aksi</span>}
+        {showActions && <span className="w-[11rem] shrink-0 text-right text-xs font-semibold uppercase tracking-wide text-text-faint">Aksi</span>}
       </div>
 
       <ul className="divide-y divide-border">
         {rows.map((row) => (
-          <li key={row.id} className="px-4 py-3.5 lg:flex lg:items-center lg:gap-4">
+          <li
+            key={row.id}
+            className="first:rounded-t-2xl last:rounded-b-2xl px-4 py-3.5 transition-colors duration-150 hover:bg-surface-2/40 lg:flex lg:items-center lg:gap-4"
+          >
             <div className="grid min-w-0 flex-1 gap-1.5 sm:grid-cols-2 lg:flex lg:gap-4">
               {columns.map((c) => (
                 <div
@@ -92,7 +95,7 @@ export function AdminTable<T extends { id: string }>({
               ))}
             </div>
             {showActions && (
-              <div className="mt-2 flex flex-wrap gap-2 lg:mt-0 lg:w-32 lg:shrink-0 lg:justify-end">
+              <div className="mt-2 flex flex-wrap gap-2 lg:mt-0 lg:w-[11rem] lg:shrink-0 lg:justify-end">
                 {rowActions?.(row)}
               </div>
             )}
@@ -130,7 +133,7 @@ export function RowButton({
       disabled={disabled}
       title={title}
       className={cn(
-        "inline-flex h-7 items-center rounded-lg border px-2.5 text-xs font-medium transition-colors disabled:opacity-50",
+        "inline-flex h-7 shrink-0 items-center gap-1 whitespace-nowrap rounded-lg border px-2.5 text-xs font-medium transition-all duration-150 active:scale-95 disabled:opacity-50",
         tones[tone]
       )}
     >
@@ -185,7 +188,7 @@ export function AdminPager({
         type="button"
         onClick={() => onPage(page - 1)}
         disabled={page <= 1}
-        className="inline-flex h-9 items-center rounded-xl border border-border px-3.5 text-sm font-medium text-text-muted transition-colors hover:border-border-strong hover:text-text disabled:opacity-40"
+        className="inline-flex h-9 items-center rounded-xl border border-border px-3.5 text-sm font-medium text-text-muted transition-all hover:border-border-strong hover:text-text active:scale-95 disabled:opacity-40"
       >
         Sebelumnya
       </button>
@@ -196,7 +199,7 @@ export function AdminPager({
         type="button"
         onClick={() => onPage(page + 1)}
         disabled={page >= totalPages}
-        className="inline-flex h-9 items-center rounded-xl border border-border px-3.5 text-sm font-medium text-text-muted transition-colors hover:border-border-strong hover:text-text disabled:opacity-40"
+        className="inline-flex h-9 items-center rounded-xl border border-border px-3.5 text-sm font-medium text-text-muted transition-all hover:border-border-strong hover:text-text active:scale-95 disabled:opacity-40"
       >
         Berikutnya
       </button>

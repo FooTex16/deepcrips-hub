@@ -5,6 +5,7 @@ import { AuthProvider } from "@/components/providers/auth-provider";
 import { ToastProvider } from "@/components/ui/toast";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
+import { NavProgress } from "@/components/layout/nav-progress";
 import { themeInitScript } from "@/components/theme/theme-toggle";
 import { SITE_NAME, SITE_TAGLINE, siteUrl } from "@/lib/utils";
 
@@ -58,6 +59,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={`${fontSans.variable} font-sans antialiased`}>
         <AuthProvider>
           <ToastProvider>
+            <NavProgress />
             <div className="flex min-h-dvh flex-col">
               <a
                 href="#konten-utama"

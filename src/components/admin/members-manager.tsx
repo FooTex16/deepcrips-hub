@@ -1,10 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { Search, ShieldCheck, Shield } from "lucide-react";
-import { AdminTable, RowButton, AdminPager } from "@/components/admin/admin-table";
+import { Search, ShieldCheck, Check, Settings2, Loader2 } from "lucide-react";
+import { AdminTable, AdminPager } from "@/components/admin/admin-table";
+import { Dropdown, DropdownItem } from "@/components/ui/dropdown";
+import { Avatar } from "@/components/ui/avatar";
 import { useToast } from "@/components/ui/toast";
-import { formatDate, truncate } from "@/lib/utils";
+import { cn, formatDate, truncate } from "@/lib/utils";
 
 interface MemberRow {
   id: string;
@@ -76,6 +78,7 @@ export function MembersManager() {
   }, [deferredQ]);
 
   const toggleRole = async (userId: string, role: string, has: boolean) => {
+    if (busyId) return;
     const action = has ? "revoke" : "grant";
     const msg = has
       ? `Cabut peran “${ROLE_LABELS[role] ?? role}” dari anggota ini?`
@@ -118,9 +121,12 @@ export function MembersManager() {
             key: "name",
             header: "Anggota",
             render: (r) => (
-              <div>
-                <p className="font-medium">{truncate(r.display_name, 40)}</p>
-                <p className="text-xs text-text-faint">Bergabung {formatDate(r.created_at)}</p>
+              <div className="flex items-center gap-3">
+                <Avatar src={r.avatar_url} name={r.display_name} size="sm" />
+                <div className="min-w-0">
+                  <p className="truncate font-medium">{truncate(r.display_name, 40)}</p>
+                  <p className="text-xs text-text-faint">Bergabung {formatDate(r.created_at)}</p>
+                </div>
               </div>
             ),
           },
@@ -149,23 +155,49 @@ export function MembersManager() {
         rows={rows}
         loading={loading}
         error={error}
-        emptyMessage="Tidak ada anggota."
+        emptyMessage="Belum ada anggota untuk ditampilkan."
         rowActions={(r) => {
           const roles = (r.roles ?? []).map((x) => x.role);
           return (
-            <>
-              {(["staff", "content_admin", "primary_admin"] as const).map((role) => (
-                <RowButton
-                  key={role}
-                  onClick={() => void toggleRole(r.id, role, roles.includes(role))}
-                  tone={roles.includes(role) ? "danger" : "brand"}
+            <Dropdown
+              label={`Kelola peran ${r.display_name}`}
+              trigger={(props) => (
+                <button
+                  type="button"
+                  {...props}
                   disabled={busyId === r.id}
+                  className="inline-flex h-7 items-center gap-1.5 whitespace-nowrap rounded-lg border border-border px-2.5 text-xs font-medium text-text-muted transition-all duration-150 hover:border-brand/40 hover:bg-brand-soft hover:text-brand active:scale-95 disabled:opacity-50"
                 >
-                  <Shield className="h-3 w-3" aria-hidden />
-                  {roles.includes(role) ? `Cabut ${ROLE_LABELS[role]}` : `Jadikan ${ROLE_LABELS[role]}`}
-                </RowButton>
-              ))}
-            </>
+                  {busyId === r.id ? (
+                    <Loader2 className="h-3 w-3 animate-spin" aria-hidden />
+                  ) : (
+                    <Settings2 className="h-3 w-3" aria-hidden />
+                  )}
+                  Kelola
+                </button>
+              )}
+            >
+              {(["staff", "content_admin", "primary_admin"] as const).map((role) => {
+                const has = roles.includes(role);
+                return (
+                  <DropdownItem key={role} onClick={() => void toggleRole(r.id, role, has)}>
+                    <span
+                      aria-hidden
+                      className={cn(
+                        "inline-flex h-4 w-4 shrink-0 items-center justify-center rounded border",
+                        has ? "border-brand bg-brand text-brand-fg" : "border-border-strong"
+                      )}
+                    >
+                      {has ? <Check className="h-3 w-3" /> : null}
+                    </span>
+                    <span className={has ? "font-semibold text-text" : undefined}>
+                      {ROLE_LABELS[role]}
+                    </span>
+                    <span className="ml-auto text-2xs text-text-faint">{has ? "aktif" : "beri"}</span>
+                  </DropdownItem>
+                );
+              })}
+            </Dropdown>
           );
         }}
       />

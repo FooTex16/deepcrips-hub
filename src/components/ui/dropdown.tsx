@@ -20,6 +20,7 @@ export interface DropdownProps {
 /** Dropdown sederhana: tutup saat klik di luar / ESC, tanpa library. */
 export function Dropdown({ trigger, children, align = "right", className, label }: DropdownProps) {
   const [open, setOpen] = React.useState(false);
+  const [openUp, setOpenUp] = React.useState(false);
   const wrapperRef = React.useRef<HTMLDivElement>(null);
   const triggerRef = React.useRef<HTMLButtonElement>(null);
 
@@ -46,7 +47,15 @@ export function Dropdown({ trigger, children, align = "right", className, label 
     <div ref={wrapperRef} className="relative">
       {trigger({
         ref: triggerRef,
-        onClick: () => setOpen((v) => !v),
+        onClick: () => {
+          if (!open && wrapperRef.current) {
+            // Balik menu ke atas bila ruang di bawah trigger sempit
+            // (mis. baris terakhir tabel) agar tidak terpotong.
+            const rect = wrapperRef.current.getBoundingClientRect();
+            setOpenUp(rect.bottom + 260 > window.innerHeight);
+          }
+          setOpen((v) => !v);
+        },
         "aria-expanded": open,
         "aria-haspopup": "menu",
       })}
@@ -55,7 +64,8 @@ export function Dropdown({ trigger, children, align = "right", className, label 
           role="menu"
           aria-label={label}
           className={cn(
-            "absolute z-40 mt-2 min-w-48 animate-scale-in overflow-hidden rounded-xl border border-border bg-surface p-1.5 shadow-pop",
+            "absolute z-40 min-w-48 animate-scale-in overflow-hidden rounded-xl border border-border bg-surface p-1.5 shadow-pop",
+            openUp ? "bottom-full mb-2" : "mt-2",
             align === "right" ? "right-0" : "left-0",
             className
           )}

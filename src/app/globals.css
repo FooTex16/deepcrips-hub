@@ -32,6 +32,7 @@
   --success: 152 62% 46%;
   --warning: 38 92% 55%;
   --danger: 0 76% 62%;
+  --info: 199 93% 60%;
   --ring: 217 91% 60%;
 }
 
@@ -57,6 +58,7 @@
   --success: 152 58% 36%;
   --warning: 32 88% 40%;
   --danger: 0 72% 50%;
+  --info: 199 89% 36%;
   --ring: 217 91% 52%;
 }
 
@@ -197,6 +199,43 @@
     @apply animate-shimmer rounded-md bg-[linear-gradient(90deg,hsl(var(--surface-2))_25%,hsl(var(--border))_50%,hsl(var(--surface-2))_75%)];
     background-size: 200% 100%;
   }
+}
+
+/* ===================================================================
+   NavProgress — indikator progres navigasi (murni CSS transition)
+   =================================================================== */
+.nav-progress {
+  position: fixed;
+  inset-inline: 0;
+  top: 0;
+  z-index: 70;
+  height: 2px;
+  pointer-events: none;
+}
+
+.nav-progress__bar {
+  height: 100%;
+  width: 0;
+  opacity: 0;
+  background: linear-gradient(90deg, hsl(var(--brand)), hsl(var(--cyan)));
+  transition:
+    width 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.3s ease;
+}
+
+.nav-progress__bar--loading {
+  width: 75%;
+  opacity: 1;
+}
+
+.nav-progress__bar--done {
+  width: 100%;
+  opacity: 0;
+}
+
+.nav-progress__bar--idle {
+  width: 0;
+  opacity: 0;
 }
 
 /* ===================================================================

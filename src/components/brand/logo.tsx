@@ -50,12 +50,17 @@ export function BrandLogo({
       aria-label="DeepCrips Hub — beranda"
       className={cn("group inline-flex items-center gap-2.5", className)}
     >
-      <BrandMark size={size} className="transition-transform duration-200 group-hover:scale-105" />
+      <BrandMark
+        size={size}
+        className="transition-transform duration-200 group-hover:-rotate-3 group-hover:scale-105"
+      />
       <span className="flex flex-col leading-none">
-        <span className="text-[15px] font-bold tracking-tight text-text">
+        <span className="whitespace-nowrap text-[15px] font-bold tracking-tight text-text">
           DeepCrips <span className="text-gradient-brand">Hub</span>
         </span>
-        <span className="mt-0.5 text-2xs text-text-faint">Gaming &amp; Tech Content</span>
+        <span className="mt-0.5 whitespace-nowrap text-2xs text-text-faint transition-colors duration-200 group-hover:text-text-muted">
+          Gaming &amp; Tech Content
+        </span>
       </span>
     </Link>
   );

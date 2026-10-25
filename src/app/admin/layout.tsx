@@ -55,7 +55,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <div className="sticky top-24">
           <Link href="/admin" className="mb-4 hidden items-center gap-2 lg:flex">
             <BrandLogo className="h-8" />
-            <span className="text-sm font-bold text-text">Panel Admin</span>
+            <span className="whitespace-nowrap text-sm font-bold text-text">Panel Admin</span>
           </Link>
           <AdminNavClient items={NAV} isPrimaryAdmin={staff.isPrimaryAdmin} />
         </div>
