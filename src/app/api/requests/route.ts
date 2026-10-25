@@ -17,6 +17,13 @@ export async function POST(request: Request) {
     return jsonError(`Anda mengajukan permintaan terlalu cepat. Coba lagi dalam ${limit.retryAfterSeconds} detik.`, 429);
   }
 
+  // Batas lampiran — selaras dengan migration 000009 & form client.
+  const MAX_SCREENSHOTS = 6;
+  const MAX_ATTACHMENTS = 5;
+  const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5 MB
+  const storagePrefix = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/request-files/`;
+  const isStorageUrl = (v: string) => v.startsWith(storagePrefix);
+
   const body = await parseBody(
     request,
     z.object({
@@ -24,10 +31,32 @@ export async function POST(request: Request) {
       request_type: z.enum(["file", "tutorial", "video", "game", "other"]),
       game_id: z.string().uuid().nullish(),
       description: cleanText(4000).refine((s) => s.length >= 10, "Deskripsi minimal 10 karakter."),
+      // Opsional: script/teks tempel, screenshot preview, file lampiran.
+      script_text: z.string().max(20000).optional(),
+      screenshots: z
+        .array(z.string().max(500).refine(isStorageUrl, "URL screenshot harus berasal dari Storage situs ini."))
+        .max(MAX_SCREENSHOTS, `Maksimal ${MAX_SCREENSHOTS} screenshot.`)
+        .optional(),
+      attachments: z
+        .array(
+          z.object({
+            name: z
+              .string()
+              .min(1)
+              .max(255)
+              .refine((s) => !/[\\/]/.test(s), "Nama file tidak boleh mengandung path."),
+            url: z.string().max(500).refine(isStorageUrl, "URL lampiran harus berasal dari Storage situs ini."),
+            size: z.number().int().min(1).max(MAX_FILE_BYTES, "Ukuran file melebihi 5 MB."),
+            type: z.string().max(128).default("application/octet-stream"),
+          })
+        )
+        .max(MAX_ATTACHMENTS, `Maksimal ${MAX_ATTACHMENTS} file lampiran.`)
+        .optional(),
     })
   );
   if ("response" in body) return body.response;
-  const { title, request_type, game_id, description } = body.data;
+  const { title, request_type, game_id, description, script_text, screenshots, attachments } = body.data;
+  const scriptText = script_text && script_text.trim() ? script_text : null;
 
   const supabase = await createClient();
 
@@ -64,6 +93,9 @@ export async function POST(request: Request) {
       request_type,
       game_id: game_id ?? null,
       description,
+      script_text: scriptText,
+      screenshots: screenshots ?? [],
+      attachments: attachments ?? [],
       requester_id: user.id,
     })
     .select("id, title, status")

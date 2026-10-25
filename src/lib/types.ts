@@ -195,12 +195,29 @@ export interface ContentReport {
   created_at: string;
 }
 
+export interface RequestAttachment {
+  /** Nama file asli (tanpa path). */
+  name: string;
+  /** URL publik di Storage (bucket request-files). */
+  url: string;
+  /** Ukuran dalam byte. */
+  size: number;
+  /** MIME type saat upload. */
+  type: string;
+}
+
 export interface ContentRequest {
   id: string;
   title: string;
   request_type: "file" | "tutorial" | "video" | "game" | "other";
   game_id: string | null;
   description: string;
+  /** Script/kode atau teks tambahan yang ditempel pengusul (opsional). */
+  script_text: string | null;
+  /** URL publik screenshot preview (maks 6). */
+  screenshots: string[];
+  /** File lampiran selain gambar (maks 5). */
+  attachments: RequestAttachment[];
   requester_id: string;
   status: RequestStatus;
   vote_count: number;

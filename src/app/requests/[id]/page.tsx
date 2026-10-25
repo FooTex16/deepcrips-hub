@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { ArrowLeft, Vote, FileDown, Clock, MessageSquareWarning } from "lucide-react";
+import { ArrowLeft, Vote, FileDown, Clock, MessageSquareWarning, ImageIcon, Paperclip, Download, FileText } from "lucide-react";
 import { Section } from "@/components/layout/section";
 import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
@@ -10,8 +10,9 @@ import { ConfigMissingState } from "@/components/ui/states";
 import { getAuthUser } from "@/lib/auth";import { isSupabaseReady } from "@/lib/data/home";
 import { getRequest, hasUserVoted } from "@/lib/data/requests";
 import { REQUEST_STATUS_META } from "@/lib/types";
-import { formatDate, timeAgo, truncate } from "@/lib/utils";
+import { formatDate, timeAgo, truncate, formatBytes } from "@/lib/utils";
 import { VoteButton } from "@/components/requests/vote-button";
+import { SmartImg } from "@/components/ui/smart-img";
 
 export const dynamic = "force-dynamic";
 
@@ -88,6 +89,79 @@ export default async function RequestDetailPage({ params }: Props) {
             </div>
             <p className="whitespace-pre-wrap text-sm leading-relaxed text-text-muted">{req.description}</p>
           </div>
+
+          {/* Screenshot preview dari pengusul */}
+          {req.screenshots && req.screenshots.length > 0 && (
+            <div className="mt-6 rounded-2xl border border-border bg-surface p-5 sm:p-6">
+              <h2 className="mb-3 flex items-center gap-1.5 text-sm font-semibold text-text">
+                <ImageIcon className="h-4 w-4 text-brand" aria-hidden />
+                Screenshot preview ({req.screenshots.length})
+              </h2>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {req.screenshots.map((url, i) => (
+                  <a
+                    key={url}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Buka ukuran penuh"
+                    className="group overflow-hidden rounded-xl border border-border"
+                  >
+                    <SmartImg
+                      src={url}
+                      alt={`Screenshot permintaan ${i + 1}`}
+                      className="aspect-video w-full transition-transform group-hover:scale-[1.02]"
+                      fallback={
+                        <span className="flex h-full w-full items-center justify-center bg-surface-2 text-xl">
+                          🖼
+                        </span>
+                      }
+                    />
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Script / teks tempel */}
+          {req.script_text && (
+            <div className="mt-6 rounded-2xl border border-border bg-surface p-5 sm:p-6">
+              <h2 className="mb-3 flex items-center gap-1.5 text-sm font-semibold text-text">
+                <FileText className="h-4 w-4 text-brand" aria-hidden />
+                Script / teks lampiran
+              </h2>
+              <pre className="max-h-80 overflow-auto whitespace-pre-wrap break-words rounded-xl border border-border bg-bg-subtle p-4 font-mono text-xs leading-relaxed text-text-muted">
+                {req.script_text}
+              </pre>
+            </div>
+          )}
+
+          {/* File lampiran */}
+          {req.attachments && req.attachments.length > 0 && (
+            <div className="mt-6 rounded-2xl border border-border bg-surface p-5 sm:p-6">
+              <h2 className="mb-3 flex items-center gap-1.5 text-sm font-semibold text-text">
+                <Paperclip className="h-4 w-4 text-brand" aria-hidden />
+                File lampiran ({req.attachments.length})
+              </h2>
+              <ul className="space-y-1.5">
+                {req.attachments.map((a) => (
+                  <li key={a.url}>
+                    <a
+                      href={a.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2.5 rounded-xl border border-border bg-bg-subtle px-3.5 py-2.5 text-sm transition-colors hover:border-brand/40"
+                    >
+                      <FileText className="h-4 w-4 shrink-0 text-text-faint" aria-hidden />
+                      <span className="min-w-0 flex-1 truncate text-text">{a.name}</span>
+                      <span className="text-xs text-text-faint">{formatBytes(a.size)}</span>
+                      <Download className="h-4 w-4 shrink-0 text-brand" aria-hidden />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {/* Catatan admin */}
           {req.admin_notes && (

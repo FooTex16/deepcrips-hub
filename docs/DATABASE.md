@@ -7,7 +7,7 @@ Skema DeepCrips Hub didefinisikan lewat **8 file migrasi SQL** di `supabase/migr
 ### Opsi A — SQL Editor (paling mudah)
 
 1. Buka **Supabase Dashboard → SQL Editor**.
-2. Jalankan setiap file **berurutan** menurut nama (prefix timestamp menjamin urutan):
+2. Jalankan setiap file **berurutan menurut nama** (prefix timestamp menjamin urutan) — **jangan loncat**, terutama `000007` wajib setelah `000002`–`000006` (lihat catatan di bawah):
    - `20261024000001_profiles_roles.sql`
    - `20261024000002_content.sql`
    - `20261024000003_media.sql`
@@ -16,7 +16,17 @@ Skema DeepCrips Hub didefinisikan lewat **8 file migrasi SQL** di `supabase/migr
    - `20261024000006_admin.sql`
    - `20261024000007_rls.sql`
    - `20261024000008_search.sql`
+   - `20261024000009_request_attachments.sql`
 3. Bila ada error di file tertentu, perbaiki lalu jalankan ulang file itu saja (semua idempoten).
+
+> ⚠️ **000007 harus setelah 000002–000006.** File RLS mengaktifkan `enable row level
+> security` di semua tabel lebih dulu; bila tabel dari 000002–000006 belum ada, script
+> berhenti di tengah dan `profiles`/`member_roles` berakhir RLS-nyala-tanpa-policy
+> (aplikasi melihat data kosong). Jika ini terjadi: selesaikan 000002–000006, lalu
+> **jalankan ulang seluruh file 000007** (idempoten), lanjut 000008 & 000009.
+>
+> ⚠️ **000009 harus setelah 000005** (menambah kolom lampiran pada `content_requests`
+> dan bucket Storage `request-files`).
 
 ### Opsi B — Supabase CLI
 
@@ -76,6 +86,11 @@ Mengaktifkan Row Level Security di **seluruh tabel** + mendefinisikan policy:
 - Index GIN + trigram (`pg_trgm`) untuk pencocokan parsial.
 - Fungsi SQL **`global_search(query, ...)`** mengembalikan hasil dikelompokkan per tipe, dengan rank & hitungan total.
 - Bila fungsi ini tidak ada (mis. migrasi belum dijalankan), lapisan data di `src/lib/data/search.ts` **otomatis jatuh ke fallback `ilike`** — pencarian tetap berfungsi tanpa RPC.
+
+### 000009 — Lampiran permintaan
+- Kolom baru `content_requests`: `script_text` (teks/script tempel, ≤ 20.000 karakter), `screenshots` (jsonb[], ≤ 6 URL), `attachments` (jsonb[], ≤ 5 file `{name, url, size, type}`).
+- Bucket Storage **`request-files`** (publik-baca, batas 5 MB/file): upload hanya ke folder `user_id/` sendiri; hapus oleh pemilik atau admin — semua lewat policy `storage.objects`.
+- Validasi rinci (tipe/jumlah/ukuran/lokasi URL) dilakukan di API (`src/app/api/requests/route.ts`, Zod) sebelum insert.
 
 ---
 

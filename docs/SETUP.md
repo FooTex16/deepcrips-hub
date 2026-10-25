@@ -38,7 +38,9 @@ Buka `.env.local` lalu isi:
 
 ## 3. Jalankan migrasi database
 
-Ikuti instruksi lengkap di [`DATABASE.md`](./DATABASE.md). Ringkasnya: buka *Supabase → SQL Editor*, lalu jalankan setiap file di `supabase/migrations/` **berurutan** (000001 → 000008).
+Ikuti instruksi lengkap di [`DATABASE.md`](./DATABASE.md). Ringkasnya: buka *Supabase → SQL Editor*, lalu jalankan setiap file di `supabase/migrations/` **berurutan sesuai nomor** (000001 → 000009), **satu per satu dan jangan loncat**.
+
+> ⚠️ **Penting — 000007 (RLS) wajib SETELAH 000002–000006.** File 000007 mengaktifkan RLS di semua tabel lalu membuat policy-nya. Jika dijalankan saat tabel 000002–000006 belum ada, script akan berhenti di tengah: RLS `profiles`/`member_roles` aktif **tanpa policy** → semua data profil & peran terlihat kosong untuk aplikasi (padahal ada di database). Bila ini sudah terjadi, jalankan ulang seluruh file `20261024000007_rls.sql` **setelah** 000002–000006 selesai — jalannya idempoten (`drop policy if exists`), aman diulang.
 
 ## 4. Konfigurasi Google OAuth
 
@@ -52,23 +54,39 @@ Ikuti instruksi lengkap di [`DATABASE.md`](./DATABASE.md). Ringkasnya: buka *Sup
 
 ## 5. Beri diri Anda peran admin
 
-Peran disimpan di tabel `member_roles`. Setelah login pertama (Google) di situs, jalankan di SQL Editor (ganti UUID dengan `auth.uid()` Anda / lihat tabel `profiles`):
+Peran disimpan di tabel `member_roles`. Setelah login pertama (Google) di situs, jalankan di SQL Editor (idempoten — aman dijalankan berulang):
 
 ```sql
 -- Lihat daftar anggota
 select id, display_name from public.profiles;
 
--- Beri peran admin utama (ganti <USER_UUID>)
+-- Beri peran admin utama berdasarkan email login Google
 insert into public.member_roles (user_id, role, granted_by)
-values ('<USER_UUID>', 'primary_admin', '<USER_UUID>')
-on conflict do nothing;
+select u.id, 'primary_admin', u.id
+from auth.users u
+where u.email = 'luthfidomes2@gmail.com'  -- ganti dengan email Anda
+on conflict (user_id, role) do nothing;
+
+-- Verifikasi
+select mr.role, p.display_name
+from public.member_roles mr
+join public.profiles p on p.id = mr.user_id;
 ```
+
+> Catatan: baris `profiles` dibuat otomatis oleh trigger saat login pertama. Jika akun Anda login sebelum migrasi 000001 terpasang, buat dulu barisnya (ganti `<USER_UUID>` dengan id di tabel `auth.users`):
+>
+> ```sql
+> insert into public.profiles (id, display_name)
+> select id, coalesce(raw_user_meta_data ->> 'full_name', 'Anggota')
+> from auth.users where email = 'luthfidomes2@gmail.com'
+> on conflict (id) do nothing;
+> ```
 
 Tiga peran tersedia (urut kewenangan):
 
 | Peran | Akses |
 |-------|-------|
-| `staff` | Moderasi forum, tinjau laporan, lihat permintaan |
+| `moderator` | Moderasi forum, tinjau laporan, lihat permintaan |
 | `content_admin` | + Kelola game/file/versi/host/tutorial/video/unggulan |
 | `primary_admin` | + Anggota & peran, pengaturan situs, hapus konten |
 
