@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { createPortal } from "react-dom";
 import { CheckCircle2, AlertTriangle, Info, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -60,37 +59,36 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={value}>
       {children}
-      {typeof document !== "undefined" &&
-        createPortal(
+      {/* Di-render inline (bukan portal ke document.body) agar render server
+          dan hydration menghasilkan tree identik. Elemen tetap position:fixed
+          sehingga tampilan tidak berubah. */}
+      <div
+        aria-live="polite"
+        aria-atomic="false"
+        className="pointer-events-none fixed inset-x-4 bottom-4 z-[60] flex flex-col items-center gap-2 sm:inset-x-auto sm:right-6 sm:items-end"
+      >
+        {items.map((item) => (
           <div
-            aria-live="polite"
-            aria-atomic="false"
-            className="pointer-events-none fixed inset-x-4 bottom-4 z-[60] flex flex-col items-center gap-2 sm:inset-x-auto sm:right-6 sm:items-end"
+            key={item.id}
+            role="status"
+            className={cn(
+              "pointer-events-auto flex w-full max-w-sm animate-slide-in-right items-start gap-3 rounded-xl border bg-surface px-4 py-3 shadow-pop",
+              toneStyles[item.tone]
+            )}
           >
-            {items.map((item) => (
-              <div
-                key={item.id}
-                role="status"
-                className={cn(
-                  "pointer-events-auto flex w-full max-w-sm animate-slide-in-right items-start gap-3 rounded-xl border bg-surface px-4 py-3 shadow-pop",
-                  toneStyles[item.tone]
-                )}
-              >
-                {toneIcons[item.tone]}
-                <p className="flex-1 text-sm text-text">{item.message}</p>
-                <button
-                  type="button"
-                  onClick={() => dismiss(item.id)}
-                  aria-label="Tutup notifikasi"
-                  className="rounded p-0.5 text-text-faint transition-colors hover:text-text"
-                >
-                  <X className="h-4 w-4" aria-hidden />
-                </button>
-              </div>
-            ))}
-          </div>,
-          document.body
-        )}
+            {toneIcons[item.tone]}
+            <p className="flex-1 text-sm text-text">{item.message}</p>
+            <button
+              type="button"
+              onClick={() => dismiss(item.id)}
+              aria-label="Tutup notifikasi"
+              className="rounded p-0.5 text-text-faint transition-colors hover:text-text"
+            >
+              <X className="h-4 w-4" aria-hidden />
+            </button>
+          </div>
+        ))}
+      </div>
     </ToastContext.Provider>
   );
 }

@@ -15,6 +15,10 @@
 .env*.local
 .env*.example.local
 
+# Kredensial OAuth/eksternal — repo bisa public, jangan pernah commit
+OAuth Google ID.json
+client_secret*.json
+
 # Misc
 .DS_Store
 *.pem
