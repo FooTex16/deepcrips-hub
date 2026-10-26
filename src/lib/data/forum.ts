@@ -1,5 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import type { ForumComment, ForumTopic, Profile } from "@/lib/types";
+import { templatesEnabled } from "@/lib/data/settings";
+import { TEMPLATE_TOPICS, fillTemplates, findTemplateById, isTemplateId } from "@/lib/templates";
 
 export const TOPIC_PAGE_SIZE = 10;
 
@@ -64,13 +66,21 @@ export async function listTopics(params: ForumListParams): Promise<Paged<ForumTo
     }
 
     const total = count ?? 0;
-    return { items: (data ?? []) as ForumTopic[], count: total, page, totalPages: Math.ceil(total / TOPIC_PAGE_SIZE) };
+    let items = (data ?? []) as ForumTopic[];
+    if (page === 1 && !params.q) {
+      items = await fillTemplates(items, TEMPLATE_TOPICS);
+    }
+    return { items, count: total, page, totalPages: Math.ceil(total / TOPIC_PAGE_SIZE) };
   } catch {
     return { items: [], count: 0, page, totalPages: 0 };
   }
 }
 
 export async function getTopic(id: string): Promise<ForumTopic | null> {
+  if (isTemplateId(id)) {
+    if (!(await templatesEnabled())) return null;
+    return findTemplateById(TEMPLATE_TOPICS, id);
+  }
   try {
     const supabase = await createClient();
     const { data } = await supabase.from("forum_topics").select(TOPIC_SELECT).eq("id", id).maybeSingle();

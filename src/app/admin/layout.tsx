@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getAuthUser, getStaffContext } from "@/lib/auth";
-import { BrandLogo } from "@/components/brand/logo";
+import { BrandMark } from "@/components/brand/logo";
 import { AdminNavClient, type NavItem } from "@/components/admin/admin-nav-client";
 
 export const metadata: Metadata = {
@@ -53,8 +53,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       {/* Sidebar */}
       <aside className="lg:w-60 lg:shrink-0">
         <div className="sticky top-24">
+          {/* Satu <Link> tunggal: BrandLogo sudah berupa <Link>, membungkusnya
+              menghasilkan <a> bersarang → invalid HTML → hydrasi gagal (#418). */}
           <Link href="/admin" className="mb-4 hidden items-center gap-2 lg:flex">
-            <BrandLogo className="h-8" />
+            <BrandMark size={32} />
             <span className="whitespace-nowrap text-sm font-bold text-text">Panel Admin</span>
           </Link>
           <AdminNavClient items={NAV} isPrimaryAdmin={staff.isPrimaryAdmin} />

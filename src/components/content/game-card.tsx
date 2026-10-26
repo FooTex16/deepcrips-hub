@@ -29,6 +29,11 @@ export function GameCard({ game, className }: { game: Game; className?: string }
         }
       />
       <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
+      {game.is_template && (
+        <span className="absolute right-3 top-3 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white/90 backdrop-blur-sm">
+          Contoh
+        </span>
+      )}
       <span className="relative p-4">
         <h3 className="line-clamp-1 text-[15px] font-semibold text-white">{game.title}</h3>
         {(game.genre || game.summary) && (

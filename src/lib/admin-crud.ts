@@ -134,6 +134,9 @@ export function makeAdminCreate(config: AdminMutateConfig) {
     } catch (err) {
       return jsonError(err instanceof Error ? err.message : "Validasi gagal.", 422);
     }
+    // Form admin mengirim null untuk input kosong; buang agar kolom NOT NULL /
+    // DEFAULT database yang berlaku saat INSERT (null = "tidak diisi").
+    row = Object.fromEntries(Object.entries(row).filter(([, v]) => v !== null));
 
     try {
       const supabase = await createClient();

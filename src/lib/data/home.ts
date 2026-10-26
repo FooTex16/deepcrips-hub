@@ -1,6 +1,14 @@
 import { createPublicClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import type { FileItem, ForumTopic, Game, Tutorial, Video } from "@/lib/types";
+import {
+  TEMPLATE_FILES,
+  TEMPLATE_GAMES,
+  TEMPLATE_TUTORIALS,
+  TEMPLATE_TOPICS,
+  TEMPLATE_VIDEOS,
+  fillTemplates,
+} from "@/lib/templates";
 
 /**
  * Semua fungsi data publik:
@@ -35,7 +43,11 @@ export async function getFeaturedFiles(limit = 3): Promise<FileItem[]> {
       .in("id", ids)
       .eq("status", "published");
     const byId = new Map((data ?? []).map((f: FileItem) => [f.id, f]));
-    return ids.map((id) => byId.get(id)).filter(Boolean) as FileItem[];
+    return fillTemplates(
+      ids.map((id) => byId.get(id)).filter(Boolean) as FileItem[],
+      TEMPLATE_FILES,
+      limit
+    );
   } catch {
     return [];
   }
@@ -50,7 +62,7 @@ export async function getLatestFiles(limit = 6): Promise<FileItem[]> {
       .eq("status", "published")
       .order("published_at", { ascending: false })
       .limit(limit);
-    return (data ?? []) as FileItem[];
+    return fillTemplates((data ?? []) as FileItem[], TEMPLATE_FILES, limit);
   } catch {
     return [];
   }
@@ -65,7 +77,7 @@ export async function getPublishedGames(limit = 6): Promise<Game[]> {
       .eq("status", "published")
       .order("published_at", { ascending: false })
       .limit(limit);
-    return (data ?? []) as Game[];
+    return fillTemplates((data ?? []) as Game[], TEMPLATE_GAMES, limit);
   } catch {
     return [];
   }
@@ -116,7 +128,7 @@ export async function getFeaturedTutorials(limit = 3): Promise<Tutorial[]> {
         .eq("status", "published");
       const byId = new Map((data ?? []).map((t: Tutorial) => [t.id, t]));
       const ordered = ids.map((id) => byId.get(id)).filter(Boolean) as Tutorial[];
-      if (ordered.length > 0) return ordered;
+      if (ordered.length > 0) return fillTemplates(ordered, TEMPLATE_TUTORIALS, limit);
     }
     const { data } = await supabase
       .from("tutorials")
@@ -124,7 +136,7 @@ export async function getFeaturedTutorials(limit = 3): Promise<Tutorial[]> {
       .eq("status", "published")
       .order("published_at", { ascending: false })
       .limit(limit);
-    return (data ?? []) as Tutorial[];
+    return fillTemplates((data ?? []) as Tutorial[], TEMPLATE_TUTORIALS, limit);
   } catch {
     return [];
   }
@@ -139,7 +151,7 @@ export async function getLatestVideos(limit = 4): Promise<Video[]> {
       .eq("status", "published")
       .order("published_at", { ascending: false })
       .limit(limit);
-    return (data ?? []) as Video[];
+    return fillTemplates((data ?? []) as Video[], TEMPLATE_VIDEOS, limit);
   } catch {
     return [];
   }
@@ -154,7 +166,7 @@ export async function getRecentForumTopics(limit = 5): Promise<ForumTopic[]> {
       .eq("hidden", false)
       .order("last_activity_at", { ascending: false })
       .limit(limit);
-    return (data ?? []) as ForumTopic[];
+    return fillTemplates((data ?? []) as ForumTopic[], TEMPLATE_TOPICS, limit);
   } catch {
     return [];
   }

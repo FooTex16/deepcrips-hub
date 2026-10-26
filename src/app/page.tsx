@@ -10,6 +10,7 @@ import { GameCard } from "@/components/content/game-card";
 import { TutorialCard, VideoCard } from "@/components/content/media-cards";
 import { TopicRow } from "@/components/content/topic-row";
 import { Reveal } from "@/components/motion/reveal";
+import { AmbientBackground } from "@/components/motion/ambient-bg";
 import { formatDate } from "@/lib/utils";
 import { fileCategoryLabel } from "@/lib/types";
 import {
@@ -41,7 +42,9 @@ export default async function HomePage() {
   return (
     <>
       {/* ===== Hero ===== */}
-      <section className="relative overflow-hidden border-b border-border">
+      <section className="relative isolate overflow-hidden border-b border-border">
+        {/* Latar gradien bergerak loop */}
+        <AmbientBackground />
         <div aria-hidden className="absolute inset-0 bg-grid-fade opacity-60" />
         <div
           aria-hidden

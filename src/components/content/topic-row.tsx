@@ -24,6 +24,7 @@ export function TopicRow({ topic, className }: { topic: ForumTopic; className?: 
           </h3>
           {topic.locked && <Badge tone="warning">Terkunci</Badge>}
           {topic.hidden && <Badge tone="danger">Disembunyikan</Badge>}
+          {topic.is_template && <Badge tone="neutral">Contoh</Badge>}
         </div>
         <p className="mt-1 line-clamp-1 text-sm text-text-muted">{truncate(topic.body, 120)}</p>
         <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-text-faint">

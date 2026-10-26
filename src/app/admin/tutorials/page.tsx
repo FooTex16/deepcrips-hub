@@ -49,7 +49,7 @@ export default function AdminTutorialsPage() {
         rows: 12,
         help: "Dukungan Markdown ringan: **tebal**, *miring*, `kode`, daftar, kutipan. HTML di-escape otomatis.",
       },
-      { name: "cover_url", label: "URL cover (opsional)", type: "text", placeholder: "https://…" },
+      { name: "cover_url", label: "Cover tutorial (opsional)", type: "image", placeholder: "https://… atau unggah gambar" },
       {
         name: "status",
         label: "Status",

@@ -255,6 +255,98 @@
   }
 }
 
+/* ===================================================================
+   AmbientBackground — latar gradien bergerak (loop, GPU-friendly)
+   Hanya transform/opacity; otomatis dinonaktifkan aturan global
+   prefers-reduced-motion di bawah.
+   =================================================================== */
+.dc-ambient {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.dc-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(72px);
+  opacity: 0.32;
+  will-change: transform;
+}
+
+.dc-orb--a {
+  width: 42vmax;
+  height: 42vmax;
+  top: -14%;
+  left: -8%;
+  background: radial-gradient(circle, hsl(var(--brand) / 0.9), transparent 65%);
+  animation: dc-drift-a 26s ease-in-out infinite alternate;
+}
+
+.dc-orb--b {
+  width: 34vmax;
+  height: 34vmax;
+  bottom: -16%;
+  right: -6%;
+  background: radial-gradient(circle, hsl(var(--cyan) / 0.8), transparent 65%);
+  animation: dc-drift-b 32s ease-in-out infinite alternate;
+}
+
+.dc-orb--c {
+  width: 26vmax;
+  height: 26vmax;
+  top: 34%;
+  left: 44%;
+  background: radial-gradient(circle, hsl(var(--info) / 0.55), transparent 65%);
+  animation: dc-drift-c 24s ease-in-out infinite alternate;
+}
+
+.light .dc-orb {
+  opacity: 0.2;
+}
+
+@keyframes dc-drift-a {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(9vw, 7vh, 0) scale(1.18);
+  }
+}
+
+@keyframes dc-drift-b {
+  from {
+    transform: translate3d(0, 0, 0) scale(1.1);
+  }
+  to {
+    transform: translate3d(-8vw, -6vh, 0) scale(0.95);
+  }
+}
+
+@keyframes dc-drift-c {
+  from {
+    transform: translate3d(-4vw, 3vh, 0) scale(0.9);
+  }
+  to {
+    transform: translate3d(5vw, -5vh, 0) scale(1.15);
+  }
+}
+
+/* Karet animasi ketik (Typewriter) */
+.tw-caret {
+  display: inline-block;
+  margin-left: 1px;
+  color: hsl(var(--brand));
+  animation: tw-blink 1s steps(2, start) infinite;
+}
+
+@keyframes tw-blink {
+  to {
+    visibility: hidden;
+  }
+}
+
 /* Reveal-on-scroll (diaktifkan JS via IntersectionObserver) */
 .reveal {
   opacity: 0;

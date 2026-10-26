@@ -32,7 +32,7 @@ const FIELDS: FieldDef[] = [
   { name: "genre", label: "Genre", type: "text", placeholder: "Contoh: MOBA, RPG" },
   { name: "summary", label: "Ringkasan", type: "textarea", rows: 2, help: "Maks 400 karakter." },
   { name: "description", label: "Deskripsi", type: "textarea", rows: 5 },
-  { name: "cover_url", label: "URL cover (opsional)", type: "text", placeholder: "https://…" },
+  { name: "cover_url", label: "Cover game (opsional)", type: "image", placeholder: "https://… atau unggah gambar" },
   {
     name: "status",
     label: "Status",

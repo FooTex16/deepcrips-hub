@@ -16,5 +16,5 @@ export const POST = makeAdminCreate({
   entity: "tutorial",
   role: "content_admin",
   createSchema: tutorialCreate,
-  onCreate: (data) => withAutoSlug(data),
+  onCreate: (data, ctx) => ({ ...withAutoSlug(data), created_by: ctx.userId }),
 });

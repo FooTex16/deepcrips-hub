@@ -2,11 +2,12 @@
 
 import * as React from "react";
 import { Loader2, X } from "lucide-react";
+import { ImageInput } from "@/components/admin/image-input";
 
 export interface FieldDef {
   name: string;
   label: string;
-  type: "text" | "textarea" | "select" | "checkbox" | "number" | "datetime-local" | "password";
+  type: "text" | "textarea" | "select" | "checkbox" | "number" | "datetime-local" | "password" | "image";
   required?: boolean;
   placeholder?: string;
   help?: string;
@@ -115,7 +116,15 @@ export function AdminFormModal({
                     {f.label}
                     {f.required && <span className="ml-1 text-danger">*</span>}
                   </label>
-                  {f.type === "textarea" ? (
+                  {f.type === "image" ? (
+                    <ImageInput
+                      value={String(values[f.name] ?? "")}
+                      onChange={(v) => set(f.name, v)}
+                      disabled={submitting}
+                      placeholder={f.placeholder}
+                      inputClassName={inputCls}
+                    />
+                  ) : f.type === "textarea" ? (
                     <textarea
                       id={`field-${f.name}`}
                       value={String(values[f.name] ?? "")}

@@ -34,6 +34,7 @@ export function TutorialCard({ tutorial, className }: { tutorial: Tutorial; clas
       </div>
       <div className="flex flex-1 flex-col p-5">
         <div className="mb-2 flex items-center gap-2">
+          {tutorial.is_template && <Badge tone="neutral">Contoh</Badge>}
           <Badge tone="neutral">{tutorial.category}</Badge>
           {tutorial.game && <Badge tone="info">{tutorial.game.title}</Badge>}
         </div>
@@ -91,6 +92,11 @@ export function VideoCard({ video, className }: { video: Video; className?: stri
             </svg>
           </span>
         </span>
+        {video.is_template && (
+          <span className="absolute right-2 top-2 z-10 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white/90 backdrop-blur-sm">
+            Contoh
+          </span>
+        )}
       </div>
       <div className="flex flex-1 flex-col p-5">
         <h3 className="line-clamp-2 text-[15px] font-semibold leading-snug text-text transition-colors group-hover:text-brand">

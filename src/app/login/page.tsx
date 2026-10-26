@@ -4,6 +4,7 @@ import * as React from "react";
 import { useSearchParams } from "next/navigation";
 import { Loader2, ShieldCheck, Download, Users, MessageSquare } from "lucide-react";
 import { BrandMark } from "@/components/brand/logo";
+import { AmbientBackground } from "@/components/motion/ambient-bg";
 import { useAuth } from "@/components/providers/auth-provider";
 import { buttonVariants } from "@/components/ui/button";
 import { cn, safeNextPath } from "@/lib/utils";
@@ -81,7 +82,9 @@ function LoginInner() {
   }
 
   return (
-    <div className="relative flex min-h-[80vh] items-center justify-center overflow-hidden px-4 py-16">
+    <div className="relative isolate flex min-h-[80vh] items-center justify-center overflow-hidden px-4 py-16">
+      {/* Latar gradien bergerak loop */}
+      <AmbientBackground />
       <div aria-hidden className="absolute inset-0 bg-grid-fade opacity-40" />
       <div
         aria-hidden

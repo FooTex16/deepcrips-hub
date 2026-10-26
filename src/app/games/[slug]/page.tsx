@@ -6,6 +6,7 @@ import { Tabs } from "@/components/ui/tabs";
 import { EmptyState, ConfigMissingState } from "@/components/ui/states";
 import { FileCard } from "@/components/content/file-card";
 import { TutorialCard, VideoCard } from "@/components/content/media-cards";
+import { TemplateNotice } from "@/components/content/template-notice";
 import { SmartImg } from "@/components/ui/smart-img";
 import { isSupabaseReady } from "@/lib/data/home";
 import { getGameBySlug, getGameContent } from "@/lib/data/catalog";
@@ -105,6 +106,7 @@ export default async function GameDetailPage({ params, searchParams }: Props) {
               </li>
             </ol>
           </nav>
+          {game.is_template && <TemplateNotice />}
           <div className="flex flex-col gap-6 sm:flex-row sm:items-end">
             {game.cover_url && (
               <SmartImg

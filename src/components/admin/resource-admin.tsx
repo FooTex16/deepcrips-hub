@@ -22,6 +22,7 @@ export function ResourceAdmin<T extends { id: string; status?: string }>({
   canDelete = true,
   searchPlaceholder = "Cari…",
   extraActions,
+  headerExtra,
   rowToInitial,
   onSaved,
 }: {
@@ -33,6 +34,8 @@ export function ResourceAdmin<T extends { id: string; status?: string }>({
   canDelete?: boolean;
   searchPlaceholder?: string;
   extraActions?: (row: T, reload: () => void) => React.ReactNode;
+  /** Aksi tambahan di header (mis. impor) — menerima reload daftar. */
+  headerExtra?: (reload: () => void) => React.ReactNode;
   rowToInitial?: (row: T) => Partial<FormValues>;
   onSaved?: () => void;
 }) {
@@ -115,14 +118,17 @@ export function ResourceAdmin<T extends { id: string; status?: string }>({
           <h1 className="text-2xl font-bold tracking-tight text-text sm:text-3xl">{title}</h1>
           {description && <p className="mt-1.5 text-sm text-text-muted">{description}</p>}
         </div>
-        <button
-          type="button"
-          onClick={openCreate}
-          className="inline-flex h-10 items-center gap-2 rounded-xl bg-brand px-4 text-sm font-semibold text-brand-fg transition-colors hover:bg-brand-hover"
-        >
-          <Plus className="h-4 w-4" aria-hidden />
-          Tambah
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          {headerExtra?.(doReload)}
+          <button
+            type="button"
+            onClick={openCreate}
+            className="inline-flex h-10 items-center gap-2 rounded-xl bg-brand px-4 text-sm font-semibold text-brand-fg transition-all hover:bg-brand-hover active:scale-[0.98]"
+          >
+            <Plus className="h-4 w-4" aria-hidden />
+            Tambah
+          </button>
+        </div>
       </header>
 
       {/* Toolbar */}

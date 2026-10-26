@@ -26,7 +26,9 @@ export const text = (max: number) =>
 export const requiredText = (min: number, max: number) =>
   text(max).refine((s) => s.length >= min, `Minimal ${min} karakter.`);
 
-export const optionalText = (max: number) => text(max).optional();
+// .nullish(): buildPayload (admin-form) mengubah input kosong menjadi null —
+// sama seperti perbaikan slug, semua field opsional harus menerima null.
+export const optionalText = (max: number) => text(max).nullish();
 
 export const uuidOrNull = z.string().uuid().nullish();
 
@@ -51,13 +53,13 @@ export const imageUrlField = (label = "URL gambar") =>
     .trim()
     .max(2048)
     .refine((v) => validateImageUrl(v).ok, `${label} tidak valid.`)
-    .optional();
+    .nullish();
 
 // ---------------------------------------------------------------------------
 // Games
 // ---------------------------------------------------------------------------
 export const gameCreate = z.object({
-  slug: slugSchema.optional(),
+  slug: slugSchema.nullish(),
   title: requiredText(1, 120),
   summary: optionalText(400),
   description: optionalText(20000),
@@ -71,7 +73,7 @@ export const gameUpdate = gameCreate.partial();
 // Files
 // ---------------------------------------------------------------------------
 export const fileCreate = z.object({
-  slug: slugSchema.optional(),
+  slug: slugSchema.nullish(),
   game_id: uuidOrNull,
   title: requiredText(1, 160),
   summary: optionalText(400),
@@ -130,10 +132,16 @@ export const hostUpdate = hostCreate.partial().omit({ file_version_id: true });
 // Tutorials
 // ---------------------------------------------------------------------------
 export const tutorialCreate = z.object({
-  slug: slugSchema.optional(),
+  slug: slugSchema.nullish(),
   title: requiredText(1, 160),
   summary: optionalText(400),
-  body: z.string().max(100000).default(""),
+  // null (input kosong dari form) dinormalkan ke string kosong.
+  body: z
+    .preprocess(
+      (v) => (v === null || v === undefined ? "" : v),
+      z.string().max(100000)
+    )
+    .default(""),
   category: requiredText(1, 40).default("general"),
   game_id: uuidOrNull,
   cover_url: imageUrlField("Cover"),
@@ -145,7 +153,8 @@ export const tutorialUpdate = tutorialCreate.partial();
 // Videos
 // ---------------------------------------------------------------------------
 export const videoCreate = z.object({
-  slug: slugSchema.optional(),
+  // .nullish(): form admin mengirim null untuk input kosong (buildPayload).
+  slug: slugSchema.nullish(),
   title: requiredText(1, 180),
   description: optionalText(4000),
   video_url: z
@@ -233,13 +242,19 @@ export const settingUpdate = z.object({
 });
 
 // ---------------------------------------------------------------------------
-// Helper: slug otomatis dari title bila slug kosong.
+// Helper: slug otomatis dari title bila slug kosong/null.
 // ---------------------------------------------------------------------------
-export function withAutoSlug<T extends { slug?: string; title?: string }>(row: T): T {
-  if ((!row.slug || row.slug === "") && row.title) {
-    return { ...row, slug: slugify(row.title) };
+export function withAutoSlug<T extends { slug?: string | null; title?: string }>(row: T): T {
+  const hasSlug = typeof row.slug === "string" && row.slug.trim() !== "";
+  if (hasSlug) return row;
+  if (!row.title) {
+    // Tidak ada judul → jangan pernah kirim null/kosong ke database
+    // (undefined di-drop oleh JSON.stringify, jadi slug tidak ikut terkirim).
+    return { ...row, slug: undefined } as T;
   }
-  return row;
+  // slugify bisa menghasilkan "" (judul non-latin) → beri dasar aman.
+  const base = slugify(row.title);
+  return { ...row, slug: base || `item-${Date.now().toString(36)}` };
 }
 
 /** Validasi URL host, throw bila ditolak (dipakai onCreate/onUpdate). */

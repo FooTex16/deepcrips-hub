@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { Section } from "@/components/layout/section";
 import { Badge } from "@/components/ui/badge";
+import { TemplateNotice } from "@/components/content/template-notice";
 import { buttonVariants } from "@/components/ui/button";
 import { ConfigMissingState } from "@/components/ui/states";
 import { SmartImg } from "@/components/ui/smart-img";
@@ -77,6 +78,8 @@ export default async function VideoDetailPage({ params }: Props) {
           Video
         </Link>
       </nav>
+
+      {video.is_template && <TemplateNotice />}
 
       <article className="mx-auto max-w-3xl">
         <div className="mb-6 overflow-hidden rounded-2xl border border-border bg-black">

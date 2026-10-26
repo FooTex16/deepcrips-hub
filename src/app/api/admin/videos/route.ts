@@ -16,5 +16,6 @@ export const POST = makeAdminCreate({
   entity: "video",
   role: "content_admin",
   createSchema: videoCreate,
-  onCreate: (data) => withAutoSlug(data),
+  // created_by wajib = auth.uid() (RLS videos_insert).
+  onCreate: (data, ctx) => ({ ...withAutoSlug(data), created_by: ctx.userId }),
 });

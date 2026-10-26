@@ -1,7 +1,20 @@
 import { createPublicClient } from "@/lib/supabase/server";
 import type { FileItem, Game, Tutorial, Video } from "@/lib/types";
+import { templatesEnabled } from "@/lib/data/settings";
+import {
+  TEMPLATE_FILES,
+  TEMPLATE_GAMES,
+  TEMPLATE_TUTORIALS,
+  TEMPLATE_VIDEOS,
+  findTemplateBySlug,
+  isTemplateId,
+  withTemplates,
+} from "@/lib/templates";
 
 export const FILE_PAGE_SIZE = 12;
+
+/** Tanggal statis untuk entri versi template. */
+const PUBLISHED_TEMPLATE_DATE = "2026-10-15T08:00:00.000Z";
 
 export interface FileFilters {
   q?: string;
@@ -89,6 +102,17 @@ export async function listPublishedFiles(filters: FileFilters): Promise<Paged<Fi
     }
 
     const total = count ?? items.length;
+    // Konten template hanya untuk halaman 1 tanpa filter apa pun — daftar
+    // hasil pencarian/filter tetap menampilkan konten asli saja.
+    const noFilters =
+      !filters.q &&
+      !filters.game &&
+      !filters.category &&
+      !filters.updatedWithin &&
+      filters.availability !== "available";
+    if (page === 1 && noFilters && (await templatesEnabled())) {
+      items = withTemplates(items, TEMPLATE_FILES);
+    }
     return { items, count: total, page, totalPages: Math.ceil(total / FILE_PAGE_SIZE) };
   } catch {
     return { items: [], count: 0, page, totalPages: 0 };
@@ -96,6 +120,10 @@ export async function listPublishedFiles(filters: FileFilters): Promise<Paged<Fi
 }
 
 export async function getFileBySlug(slug: string): Promise<FileItem | null> {
+  if (isTemplateId(slug)) {
+    if (!(await templatesEnabled())) return null;
+    return findTemplateBySlug(TEMPLATE_FILES, slug);
+  }
   try {
     const supabase = createPublicClient();
     const { data } = await supabase
@@ -138,6 +166,24 @@ export interface FileVersionWithHosts {
  * lewat view `download_hosts_public` (grant select ke anon, tanpa url).
  */
 export async function getFileVersions(fileId: string): Promise<FileVersionWithHosts[]> {
+  // Halaman detail file template → satu versi contoh tanpa host unduhan.
+  if (isTemplateId(fileId)) {
+    if (!(await templatesEnabled())) return [];
+    return [
+      {
+        id: `${fileId}-v1`,
+        file_id: fileId,
+        version_label: "v1.0 (contoh)",
+        release_notes: "Versi contoh dari konten template.",
+        released_at: PUBLISHED_TEMPLATE_DATE,
+        sha256: null,
+        compatibility: "Windows 10/11 (contoh)",
+        status: "available",
+        is_latest: true,
+        hosts: [],
+      },
+    ];
+  }
   try {
     const supabase = createPublicClient();
     const { data } = await supabase
@@ -202,13 +248,21 @@ export async function listPublishedGames(params: {
       .order("title", { ascending: true })
       .range(from, from + GAME_PAGE_SIZE - 1);
     const total = count ?? 0;
-    return { items: (data ?? []) as Game[], count: total, page, totalPages: Math.ceil(total / GAME_PAGE_SIZE) };
+    let items = (data ?? []) as Game[];
+    if (page === 1 && !params.q && !params.genre && (await templatesEnabled())) {
+      items = withTemplates(items, TEMPLATE_GAMES);
+    }
+    return { items, count: total, page, totalPages: Math.ceil(total / GAME_PAGE_SIZE) };
   } catch {
     return { items: [], count: 0, page, totalPages: 0 };
   }
 }
 
 export async function getGameBySlug(slug: string): Promise<Game | null> {
+  if (isTemplateId(slug)) {
+    if (!(await templatesEnabled())) return null;
+    return findTemplateBySlug(TEMPLATE_GAMES, slug);
+  }
   try {
     const supabase = createPublicClient();
     const { data } = await supabase.from("games").select("*").eq("slug", slug).maybeSingle();
@@ -239,6 +293,15 @@ export async function getGameContent(gameId: string): Promise<{
   tutorials: Tutorial[];
   videos: Video[];
 }> {
+  // Game template → konten terkait dari pool template (tanpa query).
+  if (isTemplateId(gameId)) {
+    if (!(await templatesEnabled())) return { files: [], tutorials: [], videos: [] };
+    return {
+      files: TEMPLATE_FILES.filter((f) => f.game_id === gameId),
+      tutorials: TEMPLATE_TUTORIALS.filter((t) => t.game_id === gameId),
+      videos: TEMPLATE_VIDEOS.filter((v) => v.game_id === gameId),
+    };
+  }
   try {
     const supabase = createPublicClient();
     const [files, tutorials, videos] = await Promise.all([
@@ -292,8 +355,12 @@ export async function listPublishedTutorials(params: {
       .order("published_at", { ascending: false, nullsFirst: false })
       .range(from, from + TUTORIAL_PAGE_SIZE - 1);
     const total = count ?? 0;
+    let items = (data ?? []) as unknown as Tutorial[];
+    if (page === 1 && !params.q && !params.category && (await templatesEnabled())) {
+      items = withTemplates(items, TEMPLATE_TUTORIALS);
+    }
     return {
-      items: (data ?? []) as unknown as Tutorial[],
+      items,
       count: total,
       page,
       totalPages: Math.ceil(total / TUTORIAL_PAGE_SIZE),
@@ -304,6 +371,10 @@ export async function listPublishedTutorials(params: {
 }
 
 export async function getTutorialBySlug(slug: string): Promise<Tutorial | null> {
+  if (isTemplateId(slug)) {
+    if (!(await templatesEnabled())) return null;
+    return findTemplateBySlug(TEMPLATE_TUTORIALS, slug);
+  }
   try {
     const supabase = createPublicClient();
     const { data } = await supabase
@@ -335,8 +406,12 @@ export async function listPublishedVideos(params: {
       .order("published_at", { ascending: false, nullsFirst: false })
       .range(from, from + VIDEO_PAGE_SIZE - 1);
     const total = count ?? 0;
+    let items = (data ?? []) as unknown as Video[];
+    if (page === 1 && !params.q && !params.category && (await templatesEnabled())) {
+      items = withTemplates(items, TEMPLATE_VIDEOS);
+    }
     return {
-      items: (data ?? []) as unknown as Video[],
+      items,
       count: total,
       page,
       totalPages: Math.ceil(total / VIDEO_PAGE_SIZE),
@@ -347,6 +422,10 @@ export async function listPublishedVideos(params: {
 }
 
 export async function getVideoBySlug(slug: string): Promise<Video | null> {
+  if (isTemplateId(slug)) {
+    if (!(await templatesEnabled())) return null;
+    return findTemplateBySlug(TEMPLATE_VIDEOS, slug);
+  }
   try {
     const supabase = createPublicClient();
     const { data } = await supabase.from("videos").select("*").eq("slug", slug).maybeSingle();

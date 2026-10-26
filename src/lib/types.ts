@@ -32,6 +32,8 @@ export interface Game {
   published_at: string | null;
   created_at: string;
   updated_at: string;
+  /** Konten template (pratinjau admin) — bukan postingan nyata. */
+  is_template?: boolean;
 }
 
 export interface FileItem {
@@ -53,6 +55,8 @@ export interface FileItem {
   created_at: string;
   updated_at: string;
   game?: Game | null;
+  /** Konten template (pratinjau admin) — bukan postingan nyata. */
+  is_template?: boolean;
 }
 
 export interface FileVersion {
@@ -109,6 +113,8 @@ export interface Tutorial {
   created_at: string;
   updated_at: string;
   game?: Game | null;
+  /** Konten template (pratinjau admin) — bukan postingan nyata. */
+  is_template?: boolean;
 }
 
 export interface Video {
@@ -125,6 +131,8 @@ export interface Video {
   published_at: string | null;
   created_at: string;
   updated_at: string;
+  /** Konten template (pratinjau admin) — bukan postingan nyata. */
+  is_template?: boolean;
 }
 
 export interface FeaturedItem {
@@ -155,6 +163,8 @@ export interface ForumTopic {
   updated_at: string;
   author?: Profile | null;
   game?: Game | null;
+  /** Konten template (pratinjau admin) — bukan postingan nyata. */
+  is_template?: boolean;
 }
 
 export interface ForumComment {

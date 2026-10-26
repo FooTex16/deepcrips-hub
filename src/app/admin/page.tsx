@@ -14,8 +14,16 @@ import {
 } from "lucide-react";
 import { Section } from "@/components/layout/section";
 import { ConfigMissingState } from "@/components/ui/states";
+import { AmbientBackground } from "@/components/motion/ambient-bg";
+import { Typewriter } from "@/components/motion/typewriter";
+import { SocialLinks } from "@/components/social/social-links";
 import { isSupabaseReady } from "@/lib/data/home";
 import { getAdminOverview } from "@/lib/data/admin";
+import {
+  DEFAULT_TYPEWRITER_PHRASES,
+  getSocialLinks,
+  getTypewriterPhrases,
+} from "@/lib/data/settings";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +32,14 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminOverviewPage() {
-  const [ready, stats] = await Promise.all([isSupabaseReady(), getAdminOverview()]);
+  const [ready, stats, phrases, socials] = await Promise.all([
+    isSupabaseReady(),
+    getAdminOverview(),
+    getTypewriterPhrases(),
+    getSocialLinks(),
+  ]);
+  // null = belum pernah diatur → pakai default; [] = admin mematikan animasi.
+  const typewriterPhrases = phrases ?? DEFAULT_TYPEWRITER_PHRASES;
 
   const cards = [
     { label: "Game", value: stats.games, href: "/admin/games", icon: Gamepad2 },
@@ -44,9 +59,18 @@ export default async function AdminOverviewPage() {
   ];
 
   return (
-    <Section className="py-6 sm:py-8">
-      <header className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight text-text sm:text-3xl">Ringkasan</h1>
+    <Section className="relative isolate py-6 sm:py-8">
+      {/* Latar gradien bergerak loop di balik dashboard */}
+      <AmbientBackground />
+
+      <header className="relative mb-6">
+        <h1 className="text-2xl font-bold tracking-tight text-text sm:text-3xl">
+          {typewriterPhrases.length > 0 ? (
+            <Typewriter phrases={typewriterPhrases} srText="Ringkasan" />
+          ) : (
+            "Ringkasan"
+          )}
+        </h1>
         <p className="mt-1.5 text-sm text-text-muted">
           Gambaran umum konten dan aktivitas komunitas DeepCrips Hub.
         </p>
@@ -111,6 +135,17 @@ export default async function AdminOverviewPage() {
           <QuickAction href="/admin/audit" label="Lihat log audit" />
         </div>
       </div>
+
+      {/* Media sosial di bawah dashboard */}
+      {socials.length > 0 && (
+        <div className="relative mt-8 rounded-2xl border border-border bg-surface p-5">
+          <h2 className="text-base font-semibold text-text">Media sosial DeepCrips</h2>
+          <p className="mt-1 text-sm text-text-muted">
+            Kanal resmi — kelola di menu Pengaturan → Tampilan situs.
+          </p>
+          <SocialLinks links={socials} className="mt-4" />
+        </div>
+      )}
     </Section>
   );
 }

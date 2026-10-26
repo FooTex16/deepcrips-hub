@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { ArrowLeft, Gamepad2 } from "lucide-react";
 import { Section } from "@/components/layout/section";
 import { Badge } from "@/components/ui/badge";
+import { TemplateNotice } from "@/components/content/template-notice";
 import { ConfigMissingState } from "@/components/ui/states";
 import { SmartImg } from "@/components/ui/smart-img";
 import { isSupabaseReady } from "@/lib/data/home";
@@ -70,6 +71,8 @@ export default async function TutorialDetailPage({ params }: Props) {
           Tutorial
         </Link>
       </nav>
+
+      {tutorial.is_template && <TemplateNotice />}
 
       <article className="mx-auto max-w-3xl">
         <header className="mb-8">

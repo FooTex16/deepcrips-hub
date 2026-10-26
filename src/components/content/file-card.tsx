@@ -20,7 +20,10 @@ export function FileCard({ file, className }: { file: FileItem; className?: stri
         <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand">
           <FileDown className="h-5 w-5" aria-hidden />
         </span>
-        <Badge tone="info">{fileCategoryLabel(file.category)}</Badge>
+        <span className="flex items-center gap-1.5">
+          {file.is_template && <Badge tone="neutral">Contoh</Badge>}
+          <Badge tone="info">{fileCategoryLabel(file.category)}</Badge>
+        </span>
       </div>
       <h3 className="line-clamp-2 text-[15px] font-semibold leading-snug text-text transition-colors group-hover:text-brand">
         {file.title}

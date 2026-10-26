@@ -8,6 +8,7 @@ import { StatusBadge } from "@/components/admin/admin-table";
 import { formatDate } from "@/lib/utils";
 import { CONTENT_STATUS_META } from "@/lib/types";
 import type { FieldDef } from "@/components/admin/admin-form";
+import { YoutubeImport } from "@/components/admin/youtube-import";
 
 interface VideoRow {
   id: string;
@@ -40,7 +41,7 @@ export default function AdminVideosPage() {
         placeholder: "https://youtube.com/watch?v=… atau youtu.be/…",
         help: "Harus tautan YouTube yang valid (watch, shorts, embed, atau youtu.be).",
       },
-      { name: "thumbnail_url", label: "URL thumbnail (opsional)", type: "text", placeholder: "https://…" },
+      { name: "thumbnail_url", label: "Thumbnail video (opsional)", type: "image", placeholder: "https://… atau unggah gambar" },
       { name: "category", label: "Kategori", type: "text", required: true, placeholder: "tutorial, gameplay…" },
       {
         name: "game_id",
@@ -75,8 +76,9 @@ export default function AdminVideosPage() {
       <ResourceAdmin<VideoRow>
         endpoint="/api/admin/videos"
         title="Video"
-        description="Kelola video YouTube. Tidak ada sinkronisasi otomatis — masukkan URL secara manual."
+        description="Kelola video YouTube — tarik video terbaru dari channel Anda dalam sekali klik, atau tambah manual."
         searchPlaceholder="Cari judul / kategori…"
+        headerExtra={(reload) => <YoutubeImport onImported={reload} />}
         columns={[
           { key: "title", header: "Judul", render: (r) => <span className="font-medium">{r.title}</span> },
           {

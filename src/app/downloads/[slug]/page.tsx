@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { Section } from "@/components/layout/section";
 import { Badge } from "@/components/ui/badge";
+import { TemplateNotice } from "@/components/content/template-notice";
 import { buttonVariants } from "@/components/ui/button";
 import { EmptyState, ConfigMissingState } from "@/components/ui/states";
 import { SmartImg } from "@/components/ui/smart-img";
@@ -110,6 +111,8 @@ export default async function FileDetailPage({ params }: Props) {
           </li>
         </ol>
       </nav>
+
+      {file.is_template && <TemplateNotice />}
 
       <div className="grid gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2">

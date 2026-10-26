@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { ArrowLeft, MessageSquare, Flame, Lock } from "lucide-react";
 import { Section } from "@/components/layout/section";
 import { Badge } from "@/components/ui/badge";
+import { TemplateNotice } from "@/components/content/template-notice";
 import { Avatar } from "@/components/ui/avatar";
 import { EmptyState, ConfigMissingState } from "@/components/ui/states";
 import { getAuthUser } from "@/lib/auth";
@@ -72,6 +73,8 @@ export default async function TopicDetailPage({ params }: Props) {
           Forum
         </Link>
       </nav>
+
+      {topic.is_template && <TemplateNotice />}
 
       <article className="mx-auto max-w-3xl">
         {/* Header topik */}
