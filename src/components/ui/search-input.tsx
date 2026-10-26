@@ -9,6 +9,8 @@ export interface SearchInputProps {
   defaultValue?: string;
   action?: string;
   placeholder?: string;
+  /** Kata kunci populer yang diketik berulang di placeholder (animasi). */
+  typingPlaceholder?: string[];
   className?: string;
   autoFocus?: boolean;
   /** Jika true, navigasi saat debounce (untuk live search). */
@@ -19,11 +21,13 @@ export interface SearchInputProps {
 /**
  * Input pencarian yang mensubmit via GET (berfungsi tanpa JS, ramah URL).
  * Opsional mode live dengan debounce ringan.
+ * Opsional placeholder animasi ketik yang bergantian lewat kata kunci.
  */
 export function SearchInput({
   defaultValue = "",
   action = "/search",
   placeholder = "Cari game, file, tutorial, video…",
+  typingPlaceholder,
   className,
   autoFocus,
   live = false,
@@ -31,6 +35,67 @@ export function SearchInput({
 }: SearchInputProps) {
   const router = useRouter();
   const [value, setValue] = React.useState(defaultValue);
+  // Placeholder animasi; default = placeholder statis agar hidrasi cocok.
+  const [shownPlaceholder, setShownPlaceholder] = React.useState(placeholder);
+  const [reduced, setReduced] = React.useState(false);
+
+  const wordsKey = (typingPlaceholder ?? []).join("\u0000");
+  const words = React.useMemo(
+    () => wordsKey.split("\u0000").filter((w) => w.trim() !== "").slice(0, 10),
+    [wordsKey]
+  );
+
+  // Preferensi reduced-motion dipindai setelah mount (pola Typewriter).
+  React.useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setReduced(mq.matches);
+    const timer = setTimeout(sync, 0);
+    mq.addEventListener("change", sync);
+    return () => {
+      clearTimeout(timer);
+      mq.removeEventListener("change", sync);
+    };
+  }, []);
+
+  // Animasi ketik: ketik → tahan → hapus → kata kunci berikutnya (loop).
+  React.useEffect(() => {
+    if (reduced || words.length === 0) return;
+    let wi = 0;
+    let char = 0;
+    let phase: "type" | "hold" | "erase" = "type";
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
+    const tick = () => {
+      const word = words[wi] ?? "";
+      if (phase === "type") {
+        char += 1;
+        setShownPlaceholder(`Cari "${word.slice(0, char)}"…`);
+        if (char >= word.length) {
+          phase = "hold";
+          timer = setTimeout(tick, 2400);
+          return;
+        }
+        timer = setTimeout(tick, 55);
+      } else if (phase === "hold") {
+        phase = "erase";
+        timer = setTimeout(tick, 20);
+      } else {
+        char -= 1;
+        setShownPlaceholder(`Cari "${word.slice(0, Math.max(char, 0))}"…`);
+        if (char <= 0) {
+          wi = (wi + 1) % words.length;
+          char = 0;
+          phase = "type";
+          timer = setTimeout(tick, 400);
+          return;
+        }
+        timer = setTimeout(tick, 24);
+      }
+    };
+
+    timer = setTimeout(tick, 600);
+    return () => clearTimeout(timer);
+  }, [reduced, words]);
 
   React.useEffect(() => {
     if (!live) return;
@@ -67,7 +132,7 @@ export function SearchInput({
         value={value}
         autoFocus={autoFocus}
         onChange={(e) => setValue(e.target.value)}
-        placeholder={placeholder}
+        placeholder={shownPlaceholder}
         aria-label="Pencarian"
         className="h-11 w-full rounded-xl border border-border bg-surface pl-10 pr-10 text-sm text-text placeholder:text-text-faint transition-colors focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/25"
       />

@@ -11,12 +11,20 @@ const importSchema = z.object({
   channel: z.string().trim().min(1, "Channel wajib diisi.").max(300),
   limit: z.coerce.number().int().min(1).max(15).default(10),
   status: z.enum(["published", "draft"]).default("published"),
+  // Mode pratinjau: kembalikan daftar video (dengan thumbnail) tanpa menyimpan.
+  preview: z.boolean().optional().default(false),
+  // Pilihan video yang akan diimpor (kosong = semua seperti biasa).
+  videoIds: z.array(z.string().min(6).max(20)).max(15).optional(),
 });
 
 /**
  * POST /api/admin/videos/import — tarik video terbaru dari channel YouTube
  * (feed resmi RSS, tanpa API key) dan buat postingan video sekaligus.
  * Video yang sudah pernah diimpor (berdasar videoId) dilewati.
+ *
+ * `preview: true` → hanya mengembalikan daftar video + thumbnail + status
+ * deduplikasi (untuk UI pemilih video), tanpa menulis apa pun.
+ * `videoIds: [...]` → impor hanya video yang dipilih admin.
  */
 export async function POST(request: Request) {
   const guard = await requireAdmin("content_admin");
@@ -28,7 +36,7 @@ export async function POST(request: Request) {
 
   const body = await parseBody(request, importSchema);
   if ("response" in body) return body.response;
-  const { channel, limit: max, status } = body.data;
+  const { channel, limit: max, status, preview, videoIds } = body.data;
 
   // 1) Channel → channelId → video terbaru (RSS, fallback halaman /videos).
   let entries: YtFeedEntry[];
@@ -44,15 +52,39 @@ export async function POST(request: Request) {
 
     // 2) Deduplikasi: kumpulkan videoId yang sudah ada di database.
     const ids = entries.map((e) => e.videoId);
-    const { data: existingRows } = await supabase
-      .from("videos")
-      .select("video_url")
-      .or(ids.map((id) => `video_url.ilike.%${id}%`).join(","));
-    const existingIds = new Set(
-      (existingRows ?? [])
-        .map((r) => extractVideoId(r.video_url ?? ""))
-        .filter((v): v is string => Boolean(v))
-    );
+    const existingIds = new Set<string>();
+    if (ids.length > 0) {
+      const { data: existingRows } = await supabase
+        .from("videos")
+        .select("video_url")
+        .or(ids.map((id) => `video_url.ilike.%${id}%`).join(","));
+      for (const r of existingRows ?? []) {
+        const vid = extractVideoId(r.video_url ?? "");
+        if (vid) existingIds.add(vid);
+      }
+    }
+
+    // 2b) Mode pratinjau: kirim daftar video (thumbnail siap ditampilkan)
+    //     beserta penanda "sudah ada" — tanpa menulis apa pun.
+    if (preview) {
+      return jsonOk({
+        preview: true,
+        channelId,
+        entries: entries.map((e) => ({
+          videoId: e.videoId,
+          title: e.title,
+          published: e.published,
+          thumbnail: e.thumbnail,
+        })),
+        existingIds: [...existingIds],
+      });
+    }
+
+    // 2c) Bila admin memilih video tertentu, saring daftar sesuai pilihan.
+    if (videoIds && videoIds.length > 0) {
+      const selected = new Set(videoIds);
+      entries = entries.filter((e) => selected.has(e.videoId));
+    }
 
     // 3) Susun baris baru.
     const now = new Date().toISOString();

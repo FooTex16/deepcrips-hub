@@ -272,7 +272,7 @@
   border-radius: 9999px;
   filter: blur(72px);
   opacity: 0.32;
-  will-change: transform;
+  will-change: transform, opacity;
 }
 
 .dc-orb--a {
@@ -281,7 +281,8 @@
   top: -14%;
   left: -8%;
   background: radial-gradient(circle, hsl(var(--brand) / 0.9), transparent 65%);
-  animation: dc-drift-a 26s ease-in-out infinite alternate;
+  animation: dc-drift-a 26s ease-in-out infinite alternate,
+    dc-glow 9s ease-in-out infinite alternate;
 }
 
 .dc-orb--b {
@@ -290,7 +291,8 @@
   bottom: -16%;
   right: -6%;
   background: radial-gradient(circle, hsl(var(--cyan) / 0.8), transparent 65%);
-  animation: dc-drift-b 32s ease-in-out infinite alternate;
+  animation: dc-drift-b 32s ease-in-out infinite alternate,
+    dc-glow 12s ease-in-out infinite alternate-reverse;
 }
 
 .dc-orb--c {
@@ -299,11 +301,36 @@
   top: 34%;
   left: 44%;
   background: radial-gradient(circle, hsl(var(--info) / 0.55), transparent 65%);
-  animation: dc-drift-c 24s ease-in-out infinite alternate;
+  animation: dc-drift-c 24s ease-in-out infinite alternate,
+    dc-glow 7s ease-in-out infinite alternate;
+}
+
+.dc-orb--d {
+  width: 30vmax;
+  height: 30vmax;
+  top: -12%;
+  right: -10%;
+  background: radial-gradient(circle, hsl(var(--warning) / 0.5), transparent 65%);
+  animation: dc-drift-d 30s ease-in-out infinite alternate,
+    dc-glow 10s ease-in-out infinite alternate-reverse;
 }
 
 .light .dc-orb {
   opacity: 0.2;
+}
+
+/* Mode terang: redupkan denyut cahaya (ganti keyframes glow). */
+.light .dc-orb--a {
+  animation-name: dc-drift-a, dc-glow-soft;
+}
+.light .dc-orb--b {
+  animation-name: dc-drift-b, dc-glow-soft;
+}
+.light .dc-orb--c {
+  animation-name: dc-drift-c, dc-glow-soft;
+}
+.light .dc-orb--d {
+  animation-name: dc-drift-d, dc-glow-soft;
 }
 
 @keyframes dc-drift-a {
@@ -311,7 +338,7 @@
     transform: translate3d(0, 0, 0) scale(1);
   }
   to {
-    transform: translate3d(9vw, 7vh, 0) scale(1.18);
+    transform: translate3d(13vw, 9vh, 0) scale(1.24);
   }
 }
 
@@ -320,7 +347,7 @@
     transform: translate3d(0, 0, 0) scale(1.1);
   }
   to {
-    transform: translate3d(-8vw, -6vh, 0) scale(0.95);
+    transform: translate3d(-12vw, -9vh, 0) scale(0.92);
   }
 }
 
@@ -329,7 +356,35 @@
     transform: translate3d(-4vw, 3vh, 0) scale(0.9);
   }
   to {
-    transform: translate3d(5vw, -5vh, 0) scale(1.15);
+    transform: translate3d(8vw, -8vh, 0) scale(1.2);
+  }
+}
+
+@keyframes dc-drift-d {
+  from {
+    transform: translate3d(0, 0, 0) scale(0.95);
+  }
+  to {
+    transform: translate3d(-10vw, 8vh, 0) scale(1.25);
+  }
+}
+
+/* Denyut pencahayaan (opacity saja — murah). */
+@keyframes dc-glow {
+  from {
+    opacity: 0.22;
+  }
+  to {
+    opacity: 0.46;
+  }
+}
+
+@keyframes dc-glow-soft {
+  from {
+    opacity: 0.1;
+  }
+  to {
+    opacity: 0.22;
   }
 }
 
@@ -364,5 +419,77 @@
     opacity: 1;
     transform: none;
     transition: none;
+  }
+}
+
+/* ===================================================================
+   ScrambleText — ekor karakter "terenkripsi" sebelum terungkap
+   =================================================================== */
+.dc-scramble__tail {
+  color: hsl(var(--brand) / 0.8);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: 0.03em;
+}
+
+/* ===================================================================
+   Animasi masuk kartu (stagger) — dipasang pada container grid.
+   Murni CSS keyframes; dinonaktifkan otomatis oleh aturan global
+   prefers-reduced-motion dan eksplisit di bawah.
+   =================================================================== */
+.dc-stagger > * {
+  animation: dc-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.06s both;
+}
+
+.dc-stagger > *:nth-child(1) {
+  animation-delay: 0.03s;
+}
+.dc-stagger > *:nth-child(2) {
+  animation-delay: 0.07s;
+}
+.dc-stagger > *:nth-child(3) {
+  animation-delay: 0.11s;
+}
+.dc-stagger > *:nth-child(4) {
+  animation-delay: 0.15s;
+}
+.dc-stagger > *:nth-child(5) {
+  animation-delay: 0.19s;
+}
+.dc-stagger > *:nth-child(6) {
+  animation-delay: 0.23s;
+}
+.dc-stagger > *:nth-child(7) {
+  animation-delay: 0.27s;
+}
+.dc-stagger > *:nth-child(8) {
+  animation-delay: 0.31s;
+}
+.dc-stagger > *:nth-child(9) {
+  animation-delay: 0.35s;
+}
+.dc-stagger > *:nth-child(10) {
+  animation-delay: 0.39s;
+}
+.dc-stagger > *:nth-child(11) {
+  animation-delay: 0.43s;
+}
+.dc-stagger > *:nth-child(12) {
+  animation-delay: 0.47s;
+}
+
+@keyframes dc-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dc-stagger > * {
+    animation: none;
   }
 }

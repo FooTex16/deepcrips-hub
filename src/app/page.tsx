@@ -13,6 +13,13 @@ import { Reveal } from "@/components/motion/reveal";
 import { AmbientBackground } from "@/components/motion/ambient-bg";
 import { formatDate } from "@/lib/utils";
 import { fileCategoryLabel } from "@/lib/types";
+import { templatesEnabled } from "@/lib/data/settings";
+import {
+  TEMPLATE_GAMES,
+  TEMPLATE_FILES,
+  TEMPLATE_TUTORIALS,
+  TEMPLATE_VIDEOS,
+} from "@/lib/templates";
 import {
   isSupabaseReady,
   getFeaturedFiles,
@@ -29,15 +36,28 @@ export const revalidate = 60;
 export default async function HomePage() {
   const ready = await isSupabaseReady();
 
-  const [featuredFiles, latestFiles, games, versionUpdates, tutorials, videos, topics] = await Promise.all([
-    getFeaturedFiles(3),
-    getLatestFiles(6),
-    getPublishedGames(6),
-    getRecentVersionUpdates(4),
-    getFeaturedTutorials(3),
-    getLatestVideos(4),
-    getRecentForumTopics(5),
-  ]);
+  const [featuredFiles, latestFiles, games, versionUpdates, tutorials, videos, topics, templatesOn] =
+    await Promise.all([
+      getFeaturedFiles(3),
+      getLatestFiles(6),
+      getPublishedGames(6),
+      getRecentVersionUpdates(4),
+      getFeaturedTutorials(3),
+      getLatestVideos(4),
+      getRecentForumTopics(5),
+      templatesEnabled(),
+    ]);
+
+  // Kata kunci animasi placeholder pencarian: judul konten template bila
+  // toggle template aktif, judul konten asli bila mati — otomatis menyesuaikan.
+  const sourceTitles = templatesOn
+    ? [...TEMPLATE_GAMES, ...TEMPLATE_FILES, ...TEMPLATE_TUTORIALS, ...TEMPLATE_VIDEOS].map(
+        (t) => t.title
+      )
+    : [...games, ...latestFiles, ...tutorials, ...videos].map((t) => t.title);
+  const searchKeywords = [...new Set(sourceTitles)]
+    .map((t) => (t.length > 36 ? `${t.slice(0, 35).trimEnd()}…` : t))
+    .slice(0, 8);
 
   return (
     <>
@@ -74,6 +94,7 @@ export default async function HomePage() {
                 <SearchInput
                   action="/search"
                   placeholder="Cari game, file, tutorial, video…"
+                  typingPlaceholder={searchKeywords}
                   className="shadow-pop"
                 />
               </div>

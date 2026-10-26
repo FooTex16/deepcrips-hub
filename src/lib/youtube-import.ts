@@ -186,22 +186,32 @@ function extractYtInitialData(html: string): string | null {
 }
 
 /** Ubah teks relatif YouTube ("1mo ago", "2 weeks ago") → ISO 8601.
+ *  Mendukung singkatan UI baru (sec/min/hr/wk/mo/yr) dan kata penuh.
  *  Bila tidak dikenal → "" (route akan memakai waktu sekarang). */
 function relativeToIso(text: string): string {
-  const m = text.match(/(\d+)\s*(second|minute|hour|day|week|month|year)s?\s+ago/i);
+  const m = text.match(
+    /(\d+)\s*(sec|second|min|minute|hr|hour|day|wk|week|mo|month|yr|year)s?\s+ago/i
+  );
   if (!m) return "";
   const n = Number(m[1]);
-  const unit = m[2].toLowerCase();
-  const ms: Record<string, number> = {
+  const units: Record<string, number> = {
+    sec: 1000,
     second: 1000,
+    min: 60_000,
     minute: 60_000,
+    hr: 3_600_000,
     hour: 3_600_000,
     day: 86_400_000,
+    wk: 604_800_000,
     week: 604_800_000,
+    mo: 2_592_000_000,
     month: 2_592_000_000,
+    yr: 31_536_000_000,
     year: 31_536_000_000,
   };
-  return new Date(Date.now() - n * (ms[unit] ?? 0)).toISOString();
+  const perUnit = units[m[2].toLowerCase()];
+  if (!perUnit) return "";
+  return new Date(Date.now() - n * perUnit).toISOString();
 }
 
 /** Kumpulkan entri video dari ytInitialData — mendukung UI baru

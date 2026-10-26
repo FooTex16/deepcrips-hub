@@ -15,6 +15,7 @@ export function AmbientBackground({ className }: { className?: string }) {
       <span className="dc-orb dc-orb--a" />
       <span className="dc-orb dc-orb--b" />
       <span className="dc-orb dc-orb--c" />
+      <span className="dc-orb dc-orb--d" />
     </div>
   );
 }

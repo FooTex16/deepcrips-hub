@@ -15,7 +15,7 @@ import {
 import { Section } from "@/components/layout/section";
 import { ConfigMissingState } from "@/components/ui/states";
 import { AmbientBackground } from "@/components/motion/ambient-bg";
-import { Typewriter } from "@/components/motion/typewriter";
+import { ScrambleText } from "@/components/motion/scramble-text";
 import { SocialLinks } from "@/components/social/social-links";
 import { isSupabaseReady } from "@/lib/data/home";
 import { getAdminOverview } from "@/lib/data/admin";
@@ -66,7 +66,7 @@ export default async function AdminOverviewPage() {
       <header className="relative mb-6">
         <h1 className="text-2xl font-bold tracking-tight text-text sm:text-3xl">
           {typewriterPhrases.length > 0 ? (
-            <Typewriter phrases={typewriterPhrases} srText="Ringkasan" />
+            <ScrambleText phrases={typewriterPhrases} srText="Ringkasan" />
           ) : (
             "Ringkasan"
           )}
@@ -83,7 +83,7 @@ export default async function AdminOverviewPage() {
       )}
 
       {/* Kartu statistik */}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="dc-stagger grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((c) => {
           const Icon = c.icon;
           return (
@@ -126,7 +126,7 @@ export default async function AdminOverviewPage() {
       {/* Aksi cepat */}
       <div className="mt-8">
         <h2 className="mb-3 text-lg font-semibold text-text">Aksi cepat</h2>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="dc-stagger grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <QuickAction href="/admin/games" label="Tambah game baru" />
           <QuickAction href="/admin/files" label="Kelola file & versi" />
           <QuickAction href="/admin/reports" label="Tinjau laporan" />

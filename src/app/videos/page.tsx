@@ -66,7 +66,7 @@ export default async function VideosPage({ searchParams }: { searchParams: Promi
         <ConfigMissingState feature="Katalog video" />
       ) : result.items.length > 0 ? (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="dc-stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {result.items.map((video) => (
               <VideoCard key={video.id} video={video} />
             ))}

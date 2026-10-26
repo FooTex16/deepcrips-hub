@@ -97,7 +97,7 @@ export default async function TutorialsPage({ searchParams }: { searchParams: Pr
         <ConfigMissingState feature="Katalog tutorial" />
       ) : result.items.length > 0 ? (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="dc-stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {result.items.map((tutorial) => (
               <TutorialCard key={tutorial.id} tutorial={tutorial} />
             ))}
