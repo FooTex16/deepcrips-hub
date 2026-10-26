@@ -11,6 +11,7 @@ import { TutorialCard, VideoCard } from "@/components/content/media-cards";
 import { TopicRow } from "@/components/content/topic-row";
 import { Reveal } from "@/components/motion/reveal";
 import { AmbientBackground } from "@/components/motion/ambient-bg";
+import { ScrambleTitle } from "@/components/motion/scramble-title";
 import { formatDate } from "@/lib/utils";
 import { fileCategoryLabel } from "@/lib/types";
 import { templatesEnabled } from "@/lib/data/settings";
@@ -79,8 +80,13 @@ export default async function HomePage() {
             </Reveal>
             <Reveal delay={60}>
               <h1 className="text-4xl font-extrabold leading-tight tracking-tight text-text sm:text-5xl lg:text-6xl">
-                Pusat <span className="text-gradient-brand">Game, Download</span>
-                <br className="hidden sm:block" /> &amp; Konten Teknologi
+                <ScrambleTitle
+                  segments={[
+                    { text: "Pusat " },
+                    { text: "Game, Download", className: "text-gradient-brand", brAfter: true },
+                    { text: " & Konten Teknologi" },
+                  ]}
+                />
               </h1>
             </Reveal>
             <Reveal delay={120}>
